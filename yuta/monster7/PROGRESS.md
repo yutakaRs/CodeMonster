@@ -15,7 +15,7 @@
 | **1** | 專案初始化與基礎架構 | ✅ 完成 |
 | **2** | D1 Schema + API 路由架構 + CORS + 統一錯誤格式 | ✅ 完成 |
 | **3** | 環境驗證 + Staging banner + Secret 管理 | ✅ 完成 |
-| **4** | 認證系統（註冊、登入、JWT、auth middleware） | ⬜ 未開始 |
+| **4** | 認證系統（註冊、登入、JWT、auth middleware） | ✅ 完成 |
 | **5** | 會員功能 + 前端頁面（Profile、頭像、密碼、登入歷史） | ⬜ 未開始 |
 | **6** | Google OAuth 登入 + 帳號連結 | ⬜ 未開始 |
 | **7** | Admin 後台 + Dashboard + seed script + 端對端驗證 | ⬜ 未開始 |
@@ -130,6 +130,35 @@
 - [x] Production 環境不顯示 banner
 - [x] JWT_SECRET 已透過 wrangler secret 設定到 staging + production
 - [x] .dev.vars 本地開發用 secret 不進 git
+
+---
+
+## Phase 4: 認證系統
+
+### Step 1: Password Hashing (PBKDF2)
+- [x] T042 建立 `src/utils/crypto.ts`（PBKDF2 via Web Crypto API，100k iterations）
+
+### Step 2: JWT Token
+- [x] T043 安裝 `jose` library
+- [x] T044 建立 `src/utils/jwt.ts`（access token 15min, refresh token 7days, HS256）
+
+### Step 3: Auth Middleware
+- [x] T045 建立 `src/middleware/auth.ts`（JWT 驗證 + is_active 檢查）
+- [x] T046 建立 `src/middleware/role.ts`（requireRole middleware）
+
+### Step 4: Auth Routes
+- [x] T047 `POST /api/auth/register` — 驗證 email/password 強度 → hash → 寫入 D1 → 發 tokens
+- [x] T048 `POST /api/auth/login` — 驗證帳密 → 記錄 login_history → 發 tokens
+- [x] T049 `POST /api/auth/refresh` — 驗證 refresh token → 檢查 is_active → 發新 access token
+
+### Phase 4 驗收條件
+- [x] 註冊成功回傳 access + refresh token
+- [x] 重複 email 回傳 409
+- [x] 密碼不符強度回傳 400（含中文錯誤訊息）
+- [x] 登入成功回傳 tokens + 記錄 login_history
+- [x] 錯誤密碼回傳 401（不洩漏 email 是否存在）
+- [x] Refresh token 換發新 access token
+- [x] 無效 refresh token 回傳 401
 
 ---
 
