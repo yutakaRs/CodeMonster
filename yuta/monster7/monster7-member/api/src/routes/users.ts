@@ -35,7 +35,13 @@ export async function handleUserRoutes(
     return getLoginHistory(env, user);
   }
 
-  // Phase 6: oauth-accounts routes
+  if (path === "/api/users/me/oauth-accounts" && method === "GET") {
+    return getOAuthAccounts(env, user);
+  }
+  if (path.startsWith("/api/users/me/oauth-accounts/") && method === "DELETE") {
+    const provider = path.split("/").pop()!;
+    return unlinkOAuth(env, user, provider);
+  }
 
   return null;
 }
@@ -183,4 +189,46 @@ async function getLoginHistory(env: Env, user: AuthUser): Promise<Response> {
     .all();
 
   return Response.json({ login_history: history.results });
+}
+
+async function getOAuthAccounts(env: Env, user: AuthUser): Promise<Response> {
+  const accounts = await env.DB.prepare(
+    "SELECT id, provider, provider_email, created_at FROM oauth_accounts WHERE user_id = ?",
+  )
+    .bind(user.id)
+    .all();
+
+  return Response.json({ oauth_accounts: accounts.results });
+}
+
+async function unlinkOAuth(env: Env, user: AuthUser, provider: string): Promise<Response> {
+  // Check if user has a password or other OAuth accounts
+  const dbUser = await env.DB.prepare("SELECT password_hash FROM users WHERE id = ?")
+    .bind(user.id)
+    .first<{ password_hash: string | null }>();
+
+  const oauthCount = await env.DB.prepare(
+    "SELECT COUNT(*) as count FROM oauth_accounts WHERE user_id = ?",
+  )
+    .bind(user.id)
+    .first<{ count: number }>();
+
+  const hasPassword = !!dbUser?.password_hash;
+  const totalOAuth = oauthCount?.count ?? 0;
+
+  if (!hasPassword && totalOAuth <= 1) {
+    return errorResponse("BAD_REQUEST", "需至少保留一種登入方式", 400);
+  }
+
+  const result = await env.DB.prepare(
+    "DELETE FROM oauth_accounts WHERE user_id = ? AND provider = ?",
+  )
+    .bind(user.id, provider)
+    .run();
+
+  if (!result.meta.changes) {
+    return errorResponse("NOT_FOUND", "OAuth account not found", 404);
+  }
+
+  return Response.json({ message: "OAuth account unlinked" });
 }

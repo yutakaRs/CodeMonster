@@ -17,7 +17,7 @@
 | **3** | 環境驗證 + Staging banner + Secret 管理 | ✅ 完成 |
 | **4** | 認證系統（註冊、登入、JWT、auth middleware） | ✅ 完成 |
 | **5** | 會員功能 + 前端頁面（Profile、頭像、密碼、登入歷史） | ✅ 完成 |
-| **6** | Google OAuth 登入 + 帳號連結 | ⬜ 未開始 |
+| **6** | Google OAuth 登入 + 帳號連結 | ✅ 完成 |
 | **7** | Admin 後台 + Dashboard + seed script + 端對端驗證 | ⬜ 未開始 |
 
 ---

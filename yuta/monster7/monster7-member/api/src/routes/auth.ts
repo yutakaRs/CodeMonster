@@ -1,3 +1,4 @@
+import { Google, generateCodeVerifier } from "arctic";
 import { Env } from "../types";
 import { errorResponse } from "../utils/errors";
 import { hashPassword, verifyPassword } from "../utils/crypto";
@@ -30,7 +31,12 @@ export async function handleAuthRoutes(
     return handleResetPassword(request, env);
   }
 
-  // Phase 6: oauth routes
+  if (path === "/api/auth/oauth/google" && method === "GET") {
+    return handleOAuthGoogle(request, env);
+  }
+  if (path === "/api/auth/oauth/google/callback" && method === "GET") {
+    return handleOAuthGoogleCallback(request, env);
+  }
 
   return null;
 }
@@ -269,4 +275,175 @@ async function handleResetPassword(request: Request, env: Env): Promise<Response
   await env.KV.delete(`reset:${token}`);
 
   return Response.json({ message: "Password reset successful" });
+}
+
+function getCallbackUrl(request: Request): string {
+  const url = new URL(request.url);
+  return `${url.origin}/api/auth/oauth/google/callback`;
+}
+
+async function handleOAuthGoogle(request: Request, env: Env): Promise<Response> {
+  const callbackUrl = getCallbackUrl(request);
+  const google = new Google(env.GOOGLE_CLIENT_ID!, env.GOOGLE_CLIENT_SECRET!, callbackUrl);
+
+  const state = crypto.randomUUID();
+  const codeVerifier = generateCodeVerifier();
+  const scopes = ["openid", "email", "profile"];
+  const authUrl = google.createAuthorizationURL(state, codeVerifier, scopes);
+
+  // Check if user is authenticated (for account linking)
+  const authHeader = request.headers.get("Authorization");
+  let userId: string | undefined;
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const payload = await verifyToken(authHeader.slice(7), env.JWT_SECRET);
+      if (payload.type === "access") userId = payload.sub!;
+    } catch { /* not authenticated, that's fine */ }
+  }
+
+  await env.KV.put(
+    `oauth_state:${state}`,
+    JSON.stringify({ provider: "google", codeVerifier, userId }),
+    { expirationTtl: 10 * 60 }, // 10 minutes
+  );
+
+  return Response.redirect(authUrl.toString(), 302);
+}
+
+async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+
+  if (!code || !state) {
+    return errorResponse("BAD_REQUEST", "Missing code or state", 400);
+  }
+
+  // Validate state
+  const stored = await env.KV.get(`oauth_state:${state}`);
+  if (!stored) {
+    return errorResponse("BAD_REQUEST", "Invalid state", 400);
+  }
+  await env.KV.delete(`oauth_state:${state}`);
+
+  const { codeVerifier, userId: linkUserId } = JSON.parse(stored) as {
+    provider: string;
+    codeVerifier: string;
+    userId?: string;
+  };
+
+  // Exchange code for tokens
+  const callbackUrl = getCallbackUrl(request);
+  const google = new Google(env.GOOGLE_CLIENT_ID!, env.GOOGLE_CLIENT_SECRET!, callbackUrl);
+
+  let tokens;
+  try {
+    tokens = await google.validateAuthorizationCode(code, codeVerifier);
+  } catch {
+    return errorResponse("BAD_REQUEST", "Failed to exchange authorization code", 400);
+  }
+
+  // Get user info from Google
+  const idToken = tokens.idToken();
+  const claims = JSON.parse(atob(idToken.split(".")[1])) as {
+    sub: string;
+    email: string;
+    name?: string;
+    picture?: string;
+  };
+
+  const providerId = claims.sub;
+  const providerEmail = claims.email;
+  const googleName = claims.name || providerEmail;
+  const now = new Date().toISOString();
+
+  // Check if this Google account is already linked
+  const existingOAuth = await env.DB.prepare(
+    "SELECT user_id FROM oauth_accounts WHERE provider = 'google' AND provider_id = ?",
+  )
+    .bind(providerId)
+    .first<{ user_id: string }>();
+
+  if (existingOAuth) {
+    // Login with existing linked account
+    const user = await env.DB.prepare("SELECT id, email, role, is_active FROM users WHERE id = ?")
+      .bind(existingOAuth.user_id)
+      .first<{ id: string; email: string; role: string; is_active: number }>();
+
+    if (!user || !user.is_active) {
+      return redirectWithError(env, "帳號已被停用");
+    }
+
+    // Record login history
+    await env.DB.prepare(
+      `INSERT INTO login_history (id, user_id, method, ip_address, user_agent, created_at)
+       VALUES (?, ?, 'google', ?, ?, ?)`,
+    )
+      .bind(crypto.randomUUID(), user.id,
+        request.headers.get("CF-Connecting-IP") ?? request.headers.get("X-Forwarded-For"),
+        request.headers.get("User-Agent"), now)
+      .run();
+
+    const accessToken = await generateAccessToken(user.id, user.email, user.role, env.JWT_SECRET);
+    const refreshToken = await generateRefreshToken(user.id, user.email, user.role, env.JWT_SECRET);
+    return redirectWithTokens(env, accessToken, refreshToken);
+  }
+
+  // Account linking: user is already logged in
+  if (linkUserId) {
+    await env.DB.prepare(
+      `INSERT INTO oauth_accounts (id, user_id, provider, provider_id, provider_email, created_at)
+       VALUES (?, ?, 'google', ?, ?, ?)`,
+    )
+      .bind(crypto.randomUUID(), linkUserId, providerId, providerEmail, now)
+      .run();
+
+    return redirectWithMessage(env, "Google 帳號已連結");
+  }
+
+  // New user: create account
+  const userId = crypto.randomUUID();
+  await env.DB.prepare(
+    `INSERT INTO users (id, email, name, role, is_active, created_at, updated_at)
+     VALUES (?, ?, ?, 'user', 1, ?, ?)`,
+  )
+    .bind(userId, providerEmail, googleName, now, now)
+    .run();
+
+  await env.DB.prepare(
+    `INSERT INTO oauth_accounts (id, user_id, provider, provider_id, provider_email, created_at)
+     VALUES (?, ?, 'google', ?, ?, ?)`,
+  )
+    .bind(crypto.randomUUID(), userId, providerId, providerEmail, now)
+    .run();
+
+  // Record login history
+  await env.DB.prepare(
+    `INSERT INTO login_history (id, user_id, method, ip_address, user_agent, created_at)
+     VALUES (?, ?, 'google', ?, ?, ?)`,
+  )
+    .bind(crypto.randomUUID(), userId,
+      request.headers.get("CF-Connecting-IP") ?? request.headers.get("X-Forwarded-For"),
+      request.headers.get("User-Agent"), now)
+    .run();
+
+  const accessToken = await generateAccessToken(userId, providerEmail, "user", env.JWT_SECRET);
+  const refreshToken = await generateRefreshToken(userId, providerEmail, "user", env.JWT_SECRET);
+  return redirectWithTokens(env, accessToken, refreshToken);
+}
+
+function redirectWithTokens(env: Env, accessToken: string, refreshToken: string): Response {
+  const frontendUrl = env.CORS_ORIGIN || "http://localhost:5173";
+  const params = new URLSearchParams({ access_token: accessToken, refresh_token: refreshToken });
+  return Response.redirect(`${frontendUrl}/oauth/callback?${params}`, 302);
+}
+
+function redirectWithError(env: Env, message: string): Response {
+  const frontendUrl = env.CORS_ORIGIN || "http://localhost:5173";
+  return Response.redirect(`${frontendUrl}/oauth/callback?error=${encodeURIComponent(message)}`, 302);
+}
+
+function redirectWithMessage(env: Env, message: string): Response {
+  const frontendUrl = env.CORS_ORIGIN || "http://localhost:5173";
+  return Response.redirect(`${frontendUrl}/profile?message=${encodeURIComponent(message)}`, 302);
 }

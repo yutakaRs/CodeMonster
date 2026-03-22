@@ -7,6 +7,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import LoginHistoryPage from "./pages/profile/LoginHistoryPage";
+import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
 
 const isStaging = import.meta.env.VITE_ENV === "staging";
 
@@ -50,6 +51,7 @@ function AppRoutes() {
       <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
       <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
       <Route path="/change-password" element={<ProtectedRoute><Layout><ChangePasswordPage /></Layout></ProtectedRoute>} />
       <Route path="/login-history" element={<ProtectedRoute><Layout><LoginHistoryPage /></Layout></ProtectedRoute>} />

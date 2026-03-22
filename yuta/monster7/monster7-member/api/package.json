@@ -13,6 +13,7 @@
     "wrangler": "^4.0.0"
   },
   "dependencies": {
+    "arctic": "^3.7.0",
     "jose": "^6.2.2"
   }
 }
