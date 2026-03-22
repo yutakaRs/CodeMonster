@@ -7,7 +7,7 @@ compatibility_date = "2025-03-20"
 name = "monster7-api-staging"
 
 [env.staging.vars]
-CORS_ORIGIN = "https://monster7-member.pages.dev"
+CORS_ORIGIN = "https://main.monster7-member.pages.dev"
 ENVIRONMENT = "staging"
 
 [[env.staging.d1_databases]]
