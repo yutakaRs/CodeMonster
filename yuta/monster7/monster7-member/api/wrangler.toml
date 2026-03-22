@@ -1,0 +1,29 @@
+name = "monster7-api"
+main = "src/index.ts"
+compatibility_date = "2025-03-20"
+
+# ---- Staging ----
+[env.staging]
+name = "monster7-api-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "monster7-db-staging"
+database_id = "18ed7bb5-0683-49d2-805d-55a27246a4b7"
+
+[[env.staging.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "monster7-bucket-staging"
+
+# ---- Production ----
+[env.production]
+name = "monster7-api-production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "monster7-db-production"
+database_id = "b0b6bec5-bddc-4ca1-9201-5f6fb40e34e6"
+
+[[env.production.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "monster7-bucket-production"
