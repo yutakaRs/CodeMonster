@@ -173,6 +173,9 @@ export default function ProfilePage() {
         <div className="pt-4 border-t space-y-2">
           <Link to="/change-password" className="block text-sm text-blue-600 hover:underline">修改密碼</Link>
           <Link to="/login-history" className="block text-sm text-blue-600 hover:underline">登入歷史</Link>
+          {user.role === "admin" && (
+            <Link to="/admin" className="block text-sm text-purple-600 font-medium hover:underline">Admin 後台</Link>
+          )}
         </div>
 
         <div className="pt-4 border-t text-sm text-gray-500">

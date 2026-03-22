@@ -4,10 +4,15 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 import ChangePasswordPage from "./pages/profile/ChangePasswordPage";
 import LoginHistoryPage from "./pages/profile/LoginHistoryPage";
-import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
+import AdminLayout from "./pages/admin/AdminLayout";
+import DashboardPage from "./pages/admin/DashboardPage";
+import UsersPage from "./pages/admin/UsersPage";
+import UserDetailPage from "./pages/admin/UserDetailPage";
+import ActivityPage from "./pages/admin/ActivityPage";
 
 const isStaging = import.meta.env.VITE_ENV === "staging";
 
@@ -24,6 +29,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "admin") return <Navigate to="/profile" replace />;
   return <>{children}</>;
 }
 
@@ -55,6 +68,12 @@ function AppRoutes() {
       <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
       <Route path="/change-password" element={<ProtectedRoute><Layout><ChangePasswordPage /></Layout></ProtectedRoute>} />
       <Route path="/login-history" element={<ProtectedRoute><Layout><LoginHistoryPage /></Layout></ProtectedRoute>} />
+      <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+        <Route index element={<DashboardPage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="users/:id" element={<UserDetailPage />} />
+        <Route path="activity" element={<ActivityPage />} />
+      </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
