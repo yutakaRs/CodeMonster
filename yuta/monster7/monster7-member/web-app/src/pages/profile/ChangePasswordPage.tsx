@@ -11,8 +11,7 @@ export default function ChangePasswordPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
+    setError(""); setMessage("");
     setLoading(true);
     try {
       const res = await apiFetch("/api/users/me/password", {
@@ -21,46 +20,36 @@ export default function ChangePasswordPage() {
         body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error?.message || "Change failed");
-      } else {
-        setMessage("密碼修改成功");
-        setOldPassword("");
-        setNewPassword("");
-      }
-    } catch {
-      setError("Change failed");
-    }
+      if (!res.ok) setError(data.error?.message || "Change failed");
+      else { setMessage("密碼修改成功"); setOldPassword(""); setNewPassword(""); }
+    } catch { setError("Change failed"); }
     setLoading(false);
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6">修改密碼</h1>
-      {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-      {message && <p className="text-green-600 text-sm mb-4">{message}</p>}
-      <div className="bg-white rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-md mx-auto animate-fade-in">
+      <h1 className="text-2xl font-bold text-white mb-6">修改密碼</h1>
+      {error && <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{error}</div>}
+      {message && <div className="mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">{message}</div>}
+      <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">舊密碼</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">舊密碼</label>
             <input type="password" required value={oldPassword} onChange={(e) => setOldPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">新密碼</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">新密碼</label>
             <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="至少 8 字元，含大小寫字母與數字" />
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" placeholder="至少 8 字元，含大小寫字母與數字" />
           </div>
           <button type="submit" disabled={loading}
-            className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 transition-all shadow-lg shadow-blue-500/25">
             {loading ? "修改中..." : "修改密碼"}
           </button>
         </form>
       </div>
-      <p className="mt-4 text-center text-sm">
-        <Link to="/profile" className="text-blue-600 hover:underline">返回 Profile</Link>
-      </p>
+      <p className="mt-6 text-center"><Link to="/profile" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">返回 Profile</Link></p>
     </div>
   );
 }

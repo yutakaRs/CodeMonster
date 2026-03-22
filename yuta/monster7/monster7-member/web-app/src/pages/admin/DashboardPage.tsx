@@ -10,6 +10,15 @@ interface Stats {
   logins_24h: number;
 }
 
+const cardConfig = [
+  { key: "total_users", label: "總用戶數", color: "from-blue-500 to-cyan-500" },
+  { key: "today_registrations", label: "今日新註冊", color: "from-green-500 to-emerald-500" },
+  { key: "active_users_7d", label: "活躍用戶 (7天)", color: "from-purple-500 to-pink-500" },
+  { key: "deactivated_count", label: "停用帳號", color: "from-red-500 to-orange-500" },
+  { key: "oauth_link_ratio", label: "OAuth 連結比例", color: "from-amber-500 to-yellow-500" },
+  { key: "logins_24h", label: "24h 登入次數", color: "from-indigo-500 to-blue-500" },
+];
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,26 +30,19 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-gray-500">載入中...</p>;
-  if (!stats) return <p className="text-red-500">載入失敗</p>;
-
-  const cards = [
-    { label: "總用戶數", value: stats.total_users },
-    { label: "今日新註冊", value: stats.today_registrations },
-    { label: "活躍用戶 (7天)", value: stats.active_users_7d },
-    { label: "停用帳號", value: stats.deactivated_count },
-    { label: "OAuth 連結比例", value: stats.oauth_link_ratio },
-    { label: "24h 登入次數", value: stats.logins_24h },
-  ];
+  if (loading) return <p className="text-slate-500">載入中...</p>;
+  if (!stats) return <p className="text-red-400">載入失敗</p>;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {cards.map((card) => (
-          <div key={card.label} className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-500">{card.label}</p>
-            <p className="text-3xl font-bold mt-1">{card.value}</p>
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-white mb-8">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {cardConfig.map((card) => (
+          <div key={card.key} className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 hover:bg-white/10 transition-all">
+            <p className="text-sm text-slate-400 mb-2">{card.label}</p>
+            <p className={`text-4xl font-bold bg-gradient-to-r ${card.color} bg-clip-text text-transparent`}>
+              {stats[card.key as keyof Stats]}
+            </p>
           </div>
         ))}
       </div>

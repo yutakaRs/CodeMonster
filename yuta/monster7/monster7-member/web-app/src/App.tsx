@@ -19,7 +19,7 @@ const isStaging = import.meta.env.VITE_ENV === "staging";
 function StagingBanner() {
   if (!isStaging) return null;
   return (
-    <div className="fixed top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center text-sm font-bold py-1 z-50">
+    <div className="fixed top-0 left-0 right-0 bg-amber-500/90 backdrop-blur-sm text-amber-950 text-center text-xs font-bold py-1.5 z-50 tracking-wider">
       STAGING ENVIRONMENT
     </div>
   );
@@ -27,14 +27,14 @@ function StagingBanner() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "admin") return <Navigate to="/profile" replace />;
   return <>{children}</>;
@@ -42,14 +42,22 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return <LoadingScreen />;
   if (user) return <Navigate to="/profile" replace />;
   return <>{children}</>;
 }
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+    </div>
+  );
+}
+
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`min-h-screen bg-gray-50 ${isStaging ? "pt-8" : ""}`}>
+    <div className={`min-h-screen ${isStaging ? "pt-8" : ""}`}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {children}
       </div>
