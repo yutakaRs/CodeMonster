@@ -14,7 +14,7 @@
 |-------|------|------|
 | **1** | 專案初始化與基礎架構 | ✅ 完成 |
 | **2** | D1 Schema + API 路由架構 + CORS + 統一錯誤格式 | ✅ 完成 |
-| **3** | 環境驗證 + Staging banner + Secret 管理 | ⬜ 未開始 |
+| **3** | 環境驗證 + Staging banner + Secret 管理 | ✅ 完成 |
 | **4** | 認證系統（註冊、登入、JWT、auth middleware） | ⬜ 未開始 |
 | **5** | 會員功能 + 前端頁面（Profile、頭像、密碼、登入歷史） | ⬜ 未開始 |
 | **6** | Google OAuth 登入 + 帳號連結 | ⬜ 未開始 |
@@ -111,6 +111,25 @@
 - [x] 統一錯誤格式：所有 404/500 回傳 `{ error: { code, message } }`
 - [x] CORS：允許 Pages domain，阻擋其他 origin
 - [x] `GET /health` 回傳含 DB 連線狀態
+
+---
+
+## Phase 3: 環境驗證 + Staging Banner + Secret 管理
+
+### Step 1: Staging Banner
+- [x] T037 web-app App.tsx 加入 staging banner（`VITE_ENV=staging` 時顯示黃色橫幅）
+- [x] T038 驗證 web-app build 成功
+
+### Step 2: Secret 管理
+- [x] T039 `wrangler secret put JWT_SECRET --env staging` 設定完成
+- [x] T040 `wrangler secret put JWT_SECRET --env production` 設定完成
+- [ ] T041 Google OAuth secrets（`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`）→ Phase 6 再設定
+
+### Phase 3 驗收條件
+- [x] Staging 環境頁面頂部顯示「STAGING ENVIRONMENT」banner
+- [x] Production 環境不顯示 banner
+- [x] JWT_SECRET 已透過 wrangler secret 設定到 staging + production
+- [x] .dev.vars 本地開發用 secret 不進 git
 
 ---
 
