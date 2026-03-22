@@ -34,6 +34,19 @@ async function router(request: Request, env: Env): Promise<Response> {
   const corsResponse = handleCors(request, env);
   if (corsResponse) return corsResponse;
 
+  // Serve R2 files (avatars)
+  if (path.startsWith("/avatars/") && method === "GET") {
+    const key = path.slice(1); // remove leading /
+    const object = await env.BUCKET.get(key);
+    if (!object) {
+      return errorResponse("NOT_FOUND", "File not found", 404);
+    }
+    const headers = new Headers();
+    object.writeHttpMetadata(headers);
+    headers.set("Cache-Control", "public, max-age=3600");
+    return withCorsHeaders(new Response(object.body, { headers }), env, request);
+  }
+
   // Route to handlers
   let response: Response | null = null;
 

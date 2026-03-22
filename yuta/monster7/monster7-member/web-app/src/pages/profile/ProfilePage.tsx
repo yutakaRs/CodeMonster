@@ -96,7 +96,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden flex items-center justify-center flex-shrink-0">
             {user.avatar_url ? (
-              <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+              <img src={`${API_URL}${user.avatar_url}`} alt="avatar" className="w-full h-full object-cover" />
             ) : (
               <span className="text-3xl text-white font-bold">{user.name.charAt(0).toUpperCase()}</span>
             )}
