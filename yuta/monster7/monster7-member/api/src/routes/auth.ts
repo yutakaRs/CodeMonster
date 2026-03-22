@@ -23,7 +23,13 @@ export async function handleAuthRoutes(
     return handleRefresh(request, env);
   }
 
-  // Phase 5: forgot-password, reset-password
+  if (path === "/api/auth/forgot-password" && method === "POST") {
+    return handleForgotPassword(request, env);
+  }
+  if (path === "/api/auth/reset-password" && method === "POST") {
+    return handleResetPassword(request, env);
+  }
+
   // Phase 6: oauth routes
 
   return null;
@@ -188,4 +194,79 @@ async function handleRefresh(request: Request, env: Env): Promise<Response> {
   const accessToken = await generateAccessToken(user.id, user.email, user.role, env.JWT_SECRET);
 
   return Response.json({ access_token: accessToken });
+}
+
+async function handleForgotPassword(request: Request, env: Env): Promise<Response> {
+  let body: { email?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return errorResponse("BAD_REQUEST", "Invalid JSON", 400);
+  }
+
+  const { email } = body;
+  if (!email) {
+    return errorResponse("BAD_REQUEST", "Email is required", 400);
+  }
+
+  // Always return success to avoid leaking email existence
+  const successMsg = { message: "If the email exists, a reset link has been generated" } as Record<string, string>;
+
+  const user = await env.DB.prepare("SELECT id, email FROM users WHERE email = ?")
+    .bind(email.toLowerCase())
+    .first<{ id: string; email: string }>();
+
+  if (user) {
+    const resetToken = crypto.randomUUID();
+    await env.KV.put(
+      `reset:${resetToken}`,
+      JSON.stringify({ userId: user.id, email: user.email }),
+      { expirationTtl: 30 * 60 }, // 30 minutes
+    );
+    // Test mode: return reset link in response body
+    successMsg.reset_link = `/reset-password?token=${resetToken}`;
+  }
+
+  return Response.json(successMsg);
+}
+
+async function handleResetPassword(request: Request, env: Env): Promise<Response> {
+  let body: { token?: string; password?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return errorResponse("BAD_REQUEST", "Invalid JSON", 400);
+  }
+
+  const { token, password } = body;
+  if (!token) {
+    return errorResponse("BAD_REQUEST", "Token is required", 400);
+  }
+  if (!password) {
+    return errorResponse("BAD_REQUEST", "Password is required", 400);
+  }
+  if (password.length < 8) {
+    return errorResponse("BAD_REQUEST", "密碼至少 8 字元", 400);
+  }
+  if (!PASSWORD_REGEX.test(password)) {
+    return errorResponse("BAD_REQUEST", "密碼需包含大小寫字母與數字", 400);
+  }
+
+  const stored = await env.KV.get(`reset:${token}`);
+  if (!stored) {
+    return errorResponse("BAD_REQUEST", "連結已失效", 400);
+  }
+
+  const { userId } = JSON.parse(stored) as { userId: string };
+
+  const passwordHash = await hashPassword(password);
+  const now = new Date().toISOString();
+  await env.DB.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?")
+    .bind(passwordHash, now, userId)
+    .run();
+
+  // Delete token immediately (single-use)
+  await env.KV.delete(`reset:${token}`);
+
+  return Response.json({ message: "Password reset successful" });
 }

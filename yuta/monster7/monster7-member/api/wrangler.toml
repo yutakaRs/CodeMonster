@@ -20,6 +20,10 @@ migrations_dir = "migrations"
 binding = "BUCKET"
 bucket_name = "monster7-bucket-staging"
 
+[[env.staging.kv_namespaces]]
+binding = "KV"
+id = "0d053bd10cbd49cbb32a0ce916c7cb59"
+
 # ---- Production ----
 [env.production]
 name = "monster7-api-production"
@@ -37,3 +41,7 @@ migrations_dir = "migrations"
 [[env.production.r2_buckets]]
 binding = "BUCKET"
 bucket_name = "monster7-bucket-production"
+
+[[env.production.kv_namespaces]]
+binding = "KV"
+id = "2d3ddac10ccc4bc4a271df2d99ef176e"
