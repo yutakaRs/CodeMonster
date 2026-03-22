@@ -22,39 +22,68 @@ export default function LoginHistoryPage() {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in">
-      <h1 className="text-2xl font-bold text-white mb-6">登入歷史</h1>
-      <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+    <div className="max-w-2xl mx-auto animate-in">
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-[#fafafa]">Login history</h1>
+        <Link
+          to="/profile"
+          className="h-9 inline-flex items-center px-3 border border-[#27272a] text-[#a1a1aa] hover:bg-[#1c1c1e] rounded-md text-[13px] font-medium transition-colors"
+        >
+          返回 Profile
+        </Link>
+      </div>
+
+      {/* Table card */}
+      <div className="rounded-xl border border-[#27272a] bg-[#141414] overflow-hidden">
         {loading ? (
-          <p className="p-8 text-center text-slate-500">載入中...</p>
+          <p className="p-8 text-center text-[#52525b] text-sm">載入中...</p>
         ) : history.length === 0 ? (
-          <p className="p-8 text-center text-slate-500">尚無登入紀錄</p>
+          <p className="p-8 text-center text-[#52525b] text-sm">尚無登入紀錄</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="px-6 py-4 text-left font-medium text-slate-400">方式</th>
-                <th className="px-6 py-4 text-left font-medium text-slate-400">IP</th>
-                <th className="px-6 py-4 text-left font-medium text-slate-400">時間</th>
+              <tr>
+                <th className="px-5 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  方式
+                </th>
+                <th className="px-5 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  IP
+                </th>
+                <th className="px-5 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  時間
+                </th>
               </tr>
             </thead>
             <tbody>
               {history.map((record) => (
-                <tr key={record.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${record.method === "google" ? "bg-blue-500/20 text-blue-300" : "bg-slate-500/20 text-slate-300"}`}>
+                <tr
+                  key={record.id}
+                  className="border-b border-[#1c1c1e] last:border-b-0 hover:bg-[#141414] transition-colors"
+                >
+                  <td className="px-5 py-3">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[12px] font-medium ${
+                        record.method === "google"
+                          ? "bg-[#6366f1]/10 text-[#a5b4fc]"
+                          : "bg-[#27272a] text-[#a1a1aa]"
+                      }`}
+                    >
                       {record.method}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-400 font-mono text-xs">{record.ip_address ?? "—"}</td>
-                  <td className="px-6 py-4 text-slate-400">{new Date(record.created_at).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-[#a1a1aa] font-mono text-[13px]">
+                    {record.ip_address ?? "\u2014"}
+                  </td>
+                  <td className="px-5 py-3 text-[#71717a]">
+                    {new Date(record.created_at).toLocaleString()}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
-      <p className="mt-6 text-center"><Link to="/profile" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">返回 Profile</Link></p>
     </div>
   );
 }
