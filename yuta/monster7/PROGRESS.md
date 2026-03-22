@@ -12,8 +12,8 @@
 
 | Phase | 內容 | 狀態 |
 |-------|------|------|
-| **1** | 專案初始化與基礎架構 | 🔧 進行中 |
-| **2** | D1 Schema + API 路由架構 + CORS + 統一錯誤格式 | ⬜ 未開始 |
+| **1** | 專案初始化與基礎架構 | ✅ 完成 |
+| **2** | D1 Schema + API 路由架構 + CORS + 統一錯誤格式 | ✅ 完成 |
 | **3** | 環境驗證 + Staging banner + Secret 管理 | ⬜ 未開始 |
 | **4** | 認證系統（註冊、登入、JWT、auth middleware） | ⬜ 未開始 |
 | **5** | 會員功能 + 前端頁面（Profile、頭像、密碼、登入歷史） | ⬜ 未開始 |
@@ -49,7 +49,7 @@
 
 ### Step 5: wrangler.toml 雙環境設定
 - [x] T016 設定 `api/wrangler.toml`（staging + production 的 D1/R2 binding）
-- [ ] T017 驗證 `wrangler dev --env staging` 可啟動 ← **待驗證**
+- [x] T017 驗證 `wrangler dev --env staging` 可啟動 ✅
 
 ### Step 6: .dev.vars 本地開發 Secrets
 - [x] T018 建立 `api/.dev.vars`（含 `JWT_SECRET`）
@@ -76,9 +76,41 @@
 
 ## 待處理事項
 
-- [ ] **清理 GitHub repo 歷史**：目前 git history 還有舊的 CMoney commit 紀錄，需要用 orphan branch 重建乾淨歷史
-- [ ] **T017 驗證**：`wrangler dev --env staging` 尚未正式驗證
-- [ ] **開始 Phase 2**：D1 Schema 設計、API 路由架構、CORS、統一錯誤格式
+- [x] **清理 GitHub repo 歷史**：已用 orphan branch 重建乾淨歷史，移除所有 CMoney/cosima/sonia 舊 commits
+- [x] **T017 驗證**：`wrangler dev --env staging` 驗證通過，`GET /health` 回傳正常
+- [x] **Phase 2 完成**：D1 Schema、路由模組化、CORS、統一錯誤格式
+
+---
+
+## Phase 2: D1 Schema + API 路由架構 + CORS + 統一錯誤格式
+
+### Step 1: D1 Schema Migration
+- [x] T024 建立 `api/migrations/0001_init.sql`（users, oauth_accounts, login_history 三張表）
+- [x] T025 wrangler.toml 加入 `migrations_dir` 設定
+- [x] T026 本地 migration 執行成功
+
+### Step 2: API 路由模組化
+- [x] T027 建立 `src/types.ts`（Env binding 型別定義）
+- [x] T028 建立 `src/utils/errors.ts`（統一錯誤格式 `{ error: { code, message } }`）
+- [x] T029 建立 `src/routes/auth.ts`（Phase 4 實作，目前 stub）
+- [x] T030 建立 `src/routes/users.ts`（Phase 5 實作，目前 stub）
+- [x] T031 建立 `src/routes/admin.ts`（Phase 7 實作，目前 stub）
+- [x] T032 更新 `src/index.ts`（router 整合路由、CORS、統一 error handling）
+
+### Step 3: CORS Middleware
+- [x] T033 建立 `src/middleware/cors.ts`（依 `CORS_ORIGIN` 環境變數驗證 origin）
+- [x] T034 wrangler.toml 加入 `CORS_ORIGIN` 與 `ENVIRONMENT` 環境變數
+- [x] T035 驗證：正確 origin 帶 CORS header，錯誤 origin 不帶
+
+### Step 4: Health Endpoint 升級
+- [x] T036 `GET /health` 加入 DB 連線狀態檢查（`db: "ok"` / `db: "error"`）
+
+### Phase 2 驗收條件
+- [x] D1 migration 本地執行成功，三張表已建立
+- [x] API 路由模組化：auth / users / admin 三個 route handler
+- [x] 統一錯誤格式：所有 404/500 回傳 `{ error: { code, message } }`
+- [x] CORS：允許 Pages domain，阻擋其他 origin
+- [x] `GET /health` 回傳含 DB 連線狀態
 
 ---
 

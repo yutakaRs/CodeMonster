@@ -6,10 +6,15 @@ compatibility_date = "2025-03-20"
 [env.staging]
 name = "monster7-api-staging"
 
+[env.staging.vars]
+CORS_ORIGIN = "https://monster7-member.pages.dev"
+ENVIRONMENT = "staging"
+
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "monster7-db-staging"
 database_id = "18ed7bb5-0683-49d2-805d-55a27246a4b7"
+migrations_dir = "migrations"
 
 [[env.staging.r2_buckets]]
 binding = "BUCKET"
@@ -19,10 +24,15 @@ bucket_name = "monster7-bucket-staging"
 [env.production]
 name = "monster7-api-production"
 
+[env.production.vars]
+CORS_ORIGIN = "https://monster7-member.pages.dev"
+ENVIRONMENT = "production"
+
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "monster7-db-production"
 database_id = "b0b6bec5-bddc-4ca1-9201-5f6fb40e34e6"
+migrations_dir = "migrations"
 
 [[env.production.r2_buckets]]
 binding = "BUCKET"
