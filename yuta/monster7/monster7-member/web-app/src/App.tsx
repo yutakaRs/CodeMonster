@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
+import Navbar from "./components/Navbar";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -57,8 +58,9 @@ function LoadingScreen() {
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`min-h-screen ${isStaging ? "pt-8" : ""}`}>
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className={`min-h-screen ${isStaging ? "pt-7" : ""}`}>
+      <Navbar />
+      <div className="max-w-5xl mx-auto px-6 py-8">
         {children}
       </div>
     </div>
