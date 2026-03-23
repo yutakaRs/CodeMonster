@@ -345,8 +345,11 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
 
   // Get user info from Google
   const idToken = tokens.idToken();
-  const payload = idToken.split(".")[1];
-  const binary = Uint8Array.from(atob(payload), (c: string) => c.charCodeAt(0));
+  const payload = idToken.split(".")[1]
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+  const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
+  const binary = Uint8Array.from(atob(padded), (c: string) => c.charCodeAt(0));
   const claims = JSON.parse(new TextDecoder().decode(binary)) as {
     sub: string;
     email: string;
