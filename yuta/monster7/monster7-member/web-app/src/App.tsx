@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
-import Navbar from "./components/Navbar";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -20,8 +19,8 @@ const isStaging = import.meta.env.VITE_ENV === "staging";
 function StagingBanner() {
   if (!isStaging) return null;
   return (
-    <div className="fixed top-0 left-0 right-0 bg-[#f59e0b] text-[#09090b] text-center text-[11px] font-semibold py-1 z-50 tracking-widest uppercase">
-      Staging Environment
+    <div className="fixed top-0 left-0 right-0 bg-amber-500/90 backdrop-blur-sm text-amber-950 text-center text-xs font-bold py-1.5 z-50 tracking-wider">
+      STAGING ENVIRONMENT
     </div>
   );
 }
@@ -51,16 +50,15 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-[#27272a] border-t-[#a1a1aa] rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
     </div>
   );
 }
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`min-h-screen ${isStaging ? "pt-7" : ""}`}>
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className={`min-h-screen ${isStaging ? "pt-8" : ""}`}>
+      <div className="max-w-4xl mx-auto px-4 py-8">
         {children}
       </div>
     </div>

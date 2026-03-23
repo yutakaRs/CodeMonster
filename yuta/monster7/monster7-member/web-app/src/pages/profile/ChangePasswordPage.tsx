@@ -27,63 +27,29 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto animate-in">
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-[#fafafa]">Change password</h1>
-        <Link
-          to="/profile"
-          className="h-9 inline-flex items-center px-3 border border-[#27272a] text-[#a1a1aa] hover:bg-[#1c1c1e] rounded-md text-[13px] font-medium transition-colors"
-        >
-          返回 Profile
-        </Link>
-      </div>
-
-      {/* Alerts */}
-      {error && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#fca5a5] text-sm">
-          {error}
-        </div>
-      )}
-      {message && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/20 text-[#86efac] text-sm">
-          {message}
-        </div>
-      )}
-
-      {/* Card */}
-      <div className="rounded-xl border border-[#27272a] bg-[#141414] p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-md mx-auto animate-fade-in">
+      <h1 className="text-2xl font-bold text-white mb-6">修改密碼</h1>
+      {error && <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{error}</div>}
+      {message && <div className="mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">{message}</div>}
+      <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-[13px] font-medium text-[#a1a1aa] mb-1.5">舊密碼</label>
-            <input
-              type="password"
-              required
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              className="w-full h-10 px-3 bg-[#09090b] border border-[#27272a] rounded-md text-sm text-[#fafafa] focus:outline-none focus:ring-2 ring-[#6366f1]/25 transition-colors"
-            />
+            <label className="block text-sm font-medium text-slate-300 mb-2">舊密碼</label>
+            <input type="password" required value={oldPassword} onChange={(e) => setOldPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" />
           </div>
           <div>
-            <label className="block text-[13px] font-medium text-[#a1a1aa] mb-1.5">新密碼</label>
-            <input
-              type="password"
-              required
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="至少 8 字元，含大小寫字母與數字"
-              className="w-full h-10 px-3 bg-[#09090b] border border-[#27272a] rounded-md text-sm text-[#fafafa] placeholder:text-[#52525b] focus:outline-none focus:ring-2 ring-[#6366f1]/25 transition-colors"
-            />
+            <label className="block text-sm font-medium text-slate-300 mb-2">新密碼</label>
+            <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" placeholder="至少 8 字元，含大小寫字母與數字" />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-10 bg-[#fafafa] text-[#09090b] font-medium rounded-md hover:bg-[#e4e4e7] active:scale-[0.97] disabled:opacity-50 transition-all text-sm"
-          >
+          <button type="submit" disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 transition-all shadow-lg shadow-blue-500/25">
             {loading ? "修改中..." : "修改密碼"}
           </button>
         </form>
       </div>
+      <p className="mt-6 text-center"><Link to="/profile" className="text-sm text-slate-400 hover:text-slate-300 transition-colors">返回 Profile</Link></p>
     </div>
   );
 }

@@ -3,38 +3,10 @@ import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
 
 interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  is_active: number;
-  created_at: string;
+  id: string; email: string; name: string; role: string; is_active: number; created_at: string;
 }
-
 interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  total_pages: number;
-}
-
-function SkeletonRow() {
-  return (
-    <tr className="h-12 border-b border-[#1c1c1e]">
-      <td className="px-4 py-2">
-        <div className="flex items-center gap-3">
-          <div className="skeleton w-8 h-8 rounded-full" />
-          <div className="space-y-1.5">
-            <div className="skeleton h-3 w-28" />
-            <div className="skeleton h-2.5 w-36" />
-          </div>
-        </div>
-      </td>
-      <td className="px-4 py-2"><div className="skeleton h-5 w-14 rounded-full" /></td>
-      <td className="px-4 py-2"><div className="skeleton h-5 w-14 rounded-full" /></td>
-      <td className="px-4 py-2"><div className="skeleton h-3 w-8" /></td>
-    </tr>
-  );
+  page: number; limit: number; total: number; total_pages: number;
 }
 
 export default function UsersPage() {
@@ -47,129 +19,60 @@ export default function UsersPage() {
     setLoading(true);
     apiFetch(`/api/admin/users?page=${p}&limit=20`)
       .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.users || []);
-        setPagination(data.pagination);
-      })
+      .then((data) => { setUsers(data.users || []); setPagination(data.pagination); })
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchUsers(page);
-  }, [page]);
+  useEffect(() => { fetchUsers(page); }, [page]);
 
   return (
-    <div className="animate-in">
-      <h1 className="text-xl font-semibold text-[#fafafa] mb-6">Members</h1>
-
-      <div className="rounded-xl border border-[#27272a] bg-[#141414] overflow-hidden">
-        <table className="w-full text-[13px]">
-          <thead>
-            <tr className="border-b border-[#27272a]">
-              <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
-                User
-              </th>
-              <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
-                Role
-              </th>
-              <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading
-              ? Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
-              : users.map((u) => (
-                  <tr
-                    key={u.id}
-                    className="h-12 border-b border-[#1c1c1e] hover:bg-[#141414]/50 transition-colors"
-                  >
-                    {/* User: avatar + name + email */}
-                    <td className="px-4 py-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#27272a] flex items-center justify-center flex-shrink-0">
-                          <span className="text-[12px] font-medium text-[#a1a1aa]">
-                            {u.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[#fafafa] text-[13px] truncate">{u.name}</p>
-                          <p className="text-[#52525b] text-[12px] truncate">{u.email}</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Role badge */}
-                    <td className="px-4 py-2">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded-full text-[12px] font-medium ${
-                          u.role === "admin"
-                            ? "bg-[#6366f1]/10 text-[#a5b4fc]"
-                            : "bg-[#27272a] text-[#a1a1aa]"
-                        }`}
-                      >
-                        {u.role}
-                      </span>
-                    </td>
-
-                    {/* Status badge */}
-                    <td className="px-4 py-2">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded-full text-[12px] font-medium ${
-                          u.is_active
-                            ? "bg-[#22c55e]/10 text-[#86efac]"
-                            : "bg-[#ef4444]/10 text-[#fca5a5]"
-                        }`}
-                      >
-                        {u.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-
-                    {/* Action */}
-                    <td className="px-4 py-2">
-                      <Link
-                        to={`/admin/users/${u.id}`}
-                        className="text-[13px] text-[#a1a1aa] hover:text-[#fafafa] transition-colors"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-          </tbody>
-        </table>
-
-        {!loading && users.length === 0 && (
-          <div className="py-12 text-center text-[13px] text-[#52525b]">No members found.</div>
+    <div className="animate-fade-in">
+      <h1 className="text-2xl font-bold text-white mb-8">用戶管理</h1>
+      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+        {loading ? (
+          <p className="p-8 text-center text-slate-500">載入中...</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10">
+                <th className="px-6 py-4 text-left font-medium text-slate-400">Email</th>
+                <th className="px-6 py-4 text-left font-medium text-slate-400">姓名</th>
+                <th className="px-6 py-4 text-left font-medium text-slate-400">角色</th>
+                <th className="px-6 py-4 text-left font-medium text-slate-400">狀態</th>
+                <th className="px-6 py-4 text-left font-medium text-slate-400"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4 text-white">{u.email}</td>
+                  <td className="px-6 py-4 text-slate-300">{u.name}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${u.role === "admin" ? "bg-purple-500/20 text-purple-300" : "bg-slate-500/20 text-slate-300"}`}>
+                      {u.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${u.is_active ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}>
+                      {u.is_active ? "啟用" : "停用"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Link to={`/admin/users/${u.id}`} className="text-blue-400 hover:text-blue-300 text-sm transition-colors">詳情</Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
-
-      {/* Pagination */}
       {pagination && pagination.total_pages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <span className="text-[13px] text-[#52525b]">
-            Page {page} of {pagination.total_pages}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-              className="h-8 px-3 border border-[#27272a] text-[13px] text-[#a1a1aa] hover:bg-[#1c1c1e] rounded-md disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage(Math.min(pagination.total_pages, page + 1))}
-              disabled={page >= pagination.total_pages}
-              className="h-8 px-3 border border-[#27272a] text-[13px] text-[#a1a1aa] hover:bg-[#1c1c1e] rounded-md disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-            >
-              Next
-            </button>
-          </div>
+        <div className="flex justify-center items-center gap-3 mt-6">
+          <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1}
+            className="px-4 py-2 border border-white/10 rounded-xl text-sm text-slate-400 hover:bg-white/5 disabled:opacity-30 transition-all">上一頁</button>
+          <span className="text-sm text-slate-500">{page} / {pagination.total_pages}</span>
+          <button onClick={() => setPage(Math.min(pagination.total_pages, page + 1))} disabled={page >= pagination.total_pages}
+            className="px-4 py-2 border border-white/10 rounded-xl text-sm text-slate-400 hover:bg-white/5 disabled:opacity-30 transition-all">下一頁</button>
         </div>
       )}
     </div>
