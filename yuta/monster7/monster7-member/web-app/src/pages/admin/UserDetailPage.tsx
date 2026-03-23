@@ -3,10 +3,28 @@ import { useParams, Link } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
 
 interface UserDetail {
-  id: string; email: string; name: string; bio: string; avatar_url: string | null;
-  role: string; is_active: number; created_at: string; updated_at: string;
-  oauth_accounts: { id: string; provider: string; provider_email: string | null; created_at: string }[];
-  login_history: { id: string; method: string; ip_address: string | null; user_agent: string | null; created_at: string }[];
+  id: string;
+  email: string;
+  name: string;
+  bio: string;
+  avatar_url: string | null;
+  role: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+  oauth_accounts: {
+    id: string;
+    provider: string;
+    provider_email: string | null;
+    created_at: string;
+  }[];
+  login_history: {
+    id: string;
+    method: string;
+    ip_address: string | null;
+    user_agent: string | null;
+    created_at: string;
+  }[];
 }
 
 export default function UserDetailPage() {
@@ -17,113 +35,265 @@ export default function UserDetailPage() {
   const [error, setError] = useState("");
 
   const fetchUser = () => {
-    apiFetch(`/api/admin/users/${id}`).then((res) => res.json()).then(setUser).finally(() => setLoading(false));
+    apiFetch(`/api/admin/users/${id}`)
+      .then((res) => res.json())
+      .then(setUser)
+      .finally(() => setLoading(false));
   };
-  useEffect(() => { fetchUser(); }, [id]);
+
+  useEffect(() => {
+    fetchUser();
+  }, [id]);
 
   const changeRole = async (role: string) => {
-    setError(""); setMessage("");
+    setError("");
+    setMessage("");
     const res = await apiFetch(`/api/admin/users/${id}/role`, {
-      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role }),
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
     });
-    if (!res.ok) { const data = await res.json(); setError(data.error?.message || "Failed"); }
-    else { setMessage("角色已更新"); fetchUser(); }
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error?.message || "Failed");
+    } else {
+      setMessage("Role updated");
+      fetchUser();
+    }
   };
 
   const toggleStatus = async (isActive: boolean) => {
-    setError(""); setMessage("");
+    setError("");
+    setMessage("");
     const res = await apiFetch(`/api/admin/users/${id}/status`, {
-      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_active: isActive }),
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_active: isActive }),
     });
-    if (!res.ok) { const data = await res.json(); setError(data.error?.message || "Failed"); }
-    else { setMessage(isActive ? "帳號已啟用" : "帳號已停用"); fetchUser(); }
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error?.message || "Failed");
+    } else {
+      setMessage(isActive ? "Account activated" : "Account deactivated");
+      fetchUser();
+    }
   };
 
-  if (loading) return <p className="text-slate-500">載入中...</p>;
-  if (!user) return <p className="text-red-400">使用者不存在</p>;
+  if (loading) {
+    return (
+      <div className="animate-in max-w-3xl">
+        <div className="skeleton h-4 w-24 mb-6" />
+        <div className="skeleton h-6 w-48 mb-6" />
+        <div className="rounded-xl border border-[#27272a] bg-[#141414] p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="skeleton w-12 h-12 rounded-full" />
+            <div className="space-y-2">
+              <div className="skeleton h-4 w-32" />
+              <div className="skeleton h-3 w-44" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="skeleton h-16 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="animate-in">
+        <Link
+          to="/admin/users"
+          className="inline-flex items-center gap-1.5 text-[13px] text-[#71717a] hover:text-[#a1a1aa] transition-colors mb-6"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Back to members
+        </Link>
+        <p className="text-[#ef4444] text-[13px]">User not found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-3xl animate-fade-in">
-      <Link to="/admin/users" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-6">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
-        返回列表
+    <div className="animate-in max-w-3xl">
+      {/* Back link */}
+      <Link
+        to="/admin/users"
+        className="inline-flex items-center gap-1.5 text-[13px] text-[#71717a] hover:text-[#a1a1aa] transition-colors mb-6"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Back to members
       </Link>
 
-      <h1 className="text-2xl font-bold text-white mb-6">使用者詳情</h1>
+      {/* Title */}
+      <h1 className="text-xl font-semibold text-[#fafafa] mb-6">{user.name}</h1>
 
-      {error && <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{error}</div>}
-      {message && <div className="mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">{message}</div>}
+      {/* Alerts */}
+      {error && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#fca5a5] text-[13px]">
+          {error}
+        </div>
+      )}
+      {message && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-[#22c55e]/10 border border-[#22c55e]/20 text-[#86efac] text-[13px]">
+          {message}
+        </div>
+      )}
 
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
-        <div className="flex items-center gap-5 mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-2xl text-white font-bold">{user.name.charAt(0).toUpperCase()}</span>
+      {/* User info card */}
+      <div className="rounded-xl border border-[#27272a] bg-[#141414] p-6 mb-6">
+        {/* Avatar + name + email */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-full bg-[#27272a] flex items-center justify-center flex-shrink-0">
+            <span className="text-[16px] font-medium text-[#a1a1aa]">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
           </div>
           <div>
-            <p className="text-white font-semibold text-lg">{user.name}</p>
-            <p className="text-slate-400 text-sm">{user.email}</p>
+            <p className="text-[#fafafa] text-[15px] font-medium">{user.name}</p>
+            <p className="text-[#71717a] text-[13px]">{user.email}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-          <div className="bg-white/5 rounded-xl p-4"><span className="text-slate-500 block mb-1">角色</span><span className="text-white">{user.role}</span></div>
-          <div className="bg-white/5 rounded-xl p-4"><span className="text-slate-500 block mb-1">狀態</span><span className={user.is_active ? "text-green-400" : "text-red-400"}>{user.is_active ? "啟用" : "停用"}</span></div>
-          <div className="bg-white/5 rounded-xl p-4"><span className="text-slate-500 block mb-1">簡介</span><span className="text-slate-300">{user.bio || "—"}</span></div>
-          <div className="bg-white/5 rounded-xl p-4"><span className="text-slate-500 block mb-1">建立時間</span><span className="text-slate-300">{new Date(user.created_at).toLocaleString()}</span></div>
+        {/* 2x2 info grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="rounded-lg bg-[#1c1c1e] p-4">
+            <p className="text-[12px] uppercase tracking-wider text-[#52525b] font-medium mb-1">Role</p>
+            <span
+              className={`inline-flex px-2 py-0.5 rounded-full text-[12px] font-medium ${
+                user.role === "admin"
+                  ? "bg-[#6366f1]/10 text-[#a5b4fc]"
+                  : "bg-[#27272a] text-[#a1a1aa]"
+              }`}
+            >
+              {user.role}
+            </span>
+          </div>
+          <div className="rounded-lg bg-[#1c1c1e] p-4">
+            <p className="text-[12px] uppercase tracking-wider text-[#52525b] font-medium mb-1">Status</p>
+            <span
+              className={`inline-flex px-2 py-0.5 rounded-full text-[12px] font-medium ${
+                user.is_active
+                  ? "bg-[#22c55e]/10 text-[#86efac]"
+                  : "bg-[#ef4444]/10 text-[#fca5a5]"
+              }`}
+            >
+              {user.is_active ? "Active" : "Inactive"}
+            </span>
+          </div>
+          <div className="rounded-lg bg-[#1c1c1e] p-4">
+            <p className="text-[12px] uppercase tracking-wider text-[#52525b] font-medium mb-1">Bio</p>
+            <p className="text-[13px] text-[#a1a1aa]">{user.bio || "---"}</p>
+          </div>
+          <div className="rounded-lg bg-[#1c1c1e] p-4">
+            <p className="text-[12px] uppercase tracking-wider text-[#52525b] font-medium mb-1">Created</p>
+            <p className="text-[13px] text-[#a1a1aa]">{new Date(user.created_at).toLocaleDateString()}</p>
+          </div>
         </div>
 
-        <div className="flex gap-3">
-          <button onClick={() => changeRole(user.role === "admin" ? "user" : "admin")}
-            className="px-4 py-2 text-sm border border-white/10 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all">
-            設為 {user.role === "admin" ? "user" : "admin"}
+        {/* Action buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => changeRole(user.role === "admin" ? "user" : "admin")}
+            className="h-8 px-3 border border-[#27272a] text-[13px] text-[#a1a1aa] hover:bg-[#1c1c1e] rounded-md transition-colors"
+          >
+            Set as {user.role === "admin" ? "user" : "admin"}
           </button>
-          <button onClick={() => toggleStatus(!user.is_active)}
-            className={`px-4 py-2 text-sm rounded-xl font-medium transition-all ${user.is_active ? "bg-red-500/20 text-red-300 hover:bg-red-500/30" : "bg-green-500/20 text-green-300 hover:bg-green-500/30"}`}>
-            {user.is_active ? "停用帳號" : "啟用帳號"}
+          <button
+            onClick={() => toggleStatus(!user.is_active)}
+            className={`h-8 px-3 border rounded-md text-[13px] font-medium transition-colors ${
+              user.is_active
+                ? "border-[#ef4444]/20 text-[#fca5a5] hover:bg-[#ef4444]/10"
+                : "border-[#22c55e]/20 text-[#86efac] hover:bg-[#22c55e]/10"
+            }`}
+          >
+            {user.is_active ? "Deactivate" : "Activate"}
           </button>
         </div>
       </div>
 
-      {/* OAuth */}
-      <h2 className="text-lg font-semibold text-white mt-8 mb-4">OAuth 連結</h2>
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
+      {/* OAuth section */}
+      <h2 className="text-[14px] font-semibold text-[#fafafa] mb-3">OAuth Accounts</h2>
+      <div className="rounded-xl border border-[#27272a] bg-[#141414] p-5 mb-6">
         {user.oauth_accounts.length === 0 ? (
-          <p className="text-sm text-slate-500">無 OAuth 連結</p>
+          <p className="text-[13px] text-[#52525b]">No OAuth accounts linked.</p>
         ) : (
           <div className="space-y-2">
             {user.oauth_accounts.map((a) => (
-              <div key={a.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                <span className="text-white text-sm font-medium capitalize">{a.provider}</span>
-                {a.provider_email && <span className="text-slate-400 text-sm">{a.provider_email}</span>}
+              <div
+                key={a.id}
+                className="flex items-center gap-3 p-3 rounded-lg bg-[#1c1c1e]"
+              >
+                <span className="text-[13px] font-medium text-[#fafafa] capitalize">
+                  {a.provider}
+                </span>
+                {a.provider_email && (
+                  <span className="text-[13px] text-[#71717a]">{a.provider_email}</span>
+                )}
+                <span className="text-[12px] text-[#52525b] ml-auto">
+                  {new Date(a.created_at).toLocaleDateString()}
+                </span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Login History */}
-      <h2 className="text-lg font-semibold text-white mt-8 mb-4">登入歷史 (最近 20 筆)</h2>
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/10">
-              <th className="px-6 py-3 text-left font-medium text-slate-400">方式</th>
-              <th className="px-6 py-3 text-left font-medium text-slate-400">IP</th>
-              <th className="px-6 py-3 text-left font-medium text-slate-400">時間</th>
-            </tr>
-          </thead>
-          <tbody>
-            {user.login_history.map((h) => (
-              <tr key={h.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                <td className="px-6 py-3">
-                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${h.method === "google" ? "bg-blue-500/20 text-blue-300" : "bg-slate-500/20 text-slate-300"}`}>{h.method}</span>
-                </td>
-                <td className="px-6 py-3 text-slate-400 font-mono text-xs">{h.ip_address ?? "—"}</td>
-                <td className="px-6 py-3 text-slate-400">{new Date(h.created_at).toLocaleString()}</td>
+      {/* Login history */}
+      <h2 className="text-[14px] font-semibold text-[#fafafa] mb-3">Login History</h2>
+      <div className="rounded-xl border border-[#27272a] bg-[#141414] overflow-hidden">
+        {user.login_history.length === 0 ? (
+          <div className="py-8 text-center text-[13px] text-[#52525b]">No login records.</div>
+        ) : (
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b border-[#27272a]">
+                <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  Method
+                </th>
+                <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  IP
+                </th>
+                <th className="px-4 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  Time
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {user.login_history.map((h) => (
+                <tr
+                  key={h.id}
+                  className="h-12 border-b border-[#1c1c1e] hover:bg-[#141414]/50 transition-colors"
+                >
+                  <td className="px-4 py-2">
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded-full text-[12px] font-medium ${
+                        h.method === "google"
+                          ? "bg-[#6366f1]/10 text-[#a5b4fc]"
+                          : "bg-[#27272a] text-[#a1a1aa]"
+                      }`}
+                    >
+                      {h.method}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 font-mono text-[12px] text-[#71717a]">
+                    {h.ip_address ?? "---"}
+                  </td>
+                  <td className="px-4 py-2 text-[#71717a]">
+                    {new Date(h.created_at).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

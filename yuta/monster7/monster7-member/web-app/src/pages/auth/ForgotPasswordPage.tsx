@@ -11,7 +11,9 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(""); setMessage(""); setResetLink("");
+    setError("");
+    setMessage("");
+    setResetLink("");
     setLoading(true);
     try {
       const res = await apiFetch("/api/auth/forgot-password", {
@@ -26,40 +28,89 @@ export default function ForgotPasswordPage() {
         setMessage(data.message);
         if (data.reset_link) setResetLink(data.reset_link);
       }
-    } catch { setError("Request failed"); }
+    } catch {
+      setError("Request failed");
+    }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-md w-full animate-fade-in">
+    <div className="min-h-screen bg-[#09090b] flex items-center justify-center px-4">
+      <div className="w-full max-w-[400px] animate-in">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">忘記密碼</h1>
-          <p className="text-slate-400 mt-2">輸入你的 email，我們會產生重設連結</p>
+          <h1 className="text-xl font-semibold text-[#fafafa]">
+            Reset your password
+          </h1>
+          <p className="text-[13px] text-[#71717a] mt-1.5">
+            We'll generate a reset link
+          </p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
-          {error && <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">{error}</div>}
-          {message && <div className="mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">{message}</div>}
-          {resetLink && (
-            <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <p className="text-amber-300 text-sm font-medium mb-1">測試模式 — Reset Link:</p>
-              <Link to={resetLink} className="text-blue-400 hover:text-blue-300 text-sm break-all">{resetLink}</Link>
+        {/* Card */}
+        <div className="rounded-2xl border border-[#27272a] bg-[#141414] p-8">
+          {error && (
+            <div className="mb-5 px-3 py-2.5 rounded-md bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#fca5a5] text-sm">
+              {error}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all" placeholder="you@example.com" />
+
+          {message && (
+            <div className="mb-5 px-3 py-2.5 rounded-md bg-[#22c55e]/10 border border-[#22c55e]/20 text-[#86efac] text-sm">
+              {message}
             </div>
-            <button type="submit" disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 transition-all duration-200 shadow-lg shadow-blue-500/25">
-              {loading ? "送出中..." : "送出"}
+          )}
+
+          {resetLink && (
+            <div className="mb-5 px-3 py-3 rounded-md bg-[#f59e0b]/10 border border-[#f59e0b]/20">
+              <p className="text-[#fcd34d] text-[13px] font-medium mb-1">
+                Test mode — Reset Link:
+              </p>
+              <Link
+                to={resetLink}
+                className="text-[#fafafa] hover:underline text-sm break-all"
+              >
+                {resetLink}
+              </Link>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <label className="block text-[13px] font-medium text-[#a1a1aa] mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full h-10 px-3 bg-[#09090b] border border-[#27272a] rounded-md text-sm text-[#fafafa] placeholder-[#52525b] focus:outline-none focus:ring-2 ring-[#6366f1]/25 transition-colors"
+              />
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-10 bg-[#fafafa] text-[#09090b] font-medium rounded-md text-sm hover:bg-[#e4e4e7] active:scale-[0.97] disabled:opacity-50 transition-all duration-150 mt-2"
+            >
+              {loading ? "Sending..." : "Send reset link"}
             </button>
           </form>
         </div>
-        <p className="mt-6 text-center text-sm"><Link to="/login" className="text-slate-400 hover:text-slate-300 transition-colors">返回登入</Link></p>
+
+        {/* Footer */}
+        <p className="mt-6 text-center">
+          <Link
+            to="/login"
+            className="text-[13px] text-[#52525b] hover:text-[#71717a] transition-colors"
+          >
+            Back to login
+          </Link>
+        </p>
       </div>
     </div>
   );
