@@ -315,13 +315,17 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
 
+  console.log("[OAuth] Callback received", { hasCode: !!code, hasState: !!state });
+
   if (!code || !state) {
+    console.warn("[OAuth] Missing code or state");
     return errorResponse("BAD_REQUEST", "Missing code or state", 400);
   }
 
   // Validate state
   const stored = await env.KV.get(`oauth_state:${state}`);
   if (!stored) {
+    console.warn("[OAuth] Invalid or expired state");
     return errorResponse("BAD_REQUEST", "Invalid state", 400);
   }
   await env.KV.delete(`oauth_state:${state}`);
@@ -334,28 +338,32 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
 
   // Exchange code for tokens
   const callbackUrl = getCallbackUrl(request);
+  console.log("[OAuth] Exchanging code for tokens", { callbackUrl, isLinking: !!linkUserId });
   const google = new Google(env.GOOGLE_CLIENT_ID!, env.GOOGLE_CLIENT_SECRET!, callbackUrl);
 
   let tokens;
   try {
     tokens = await google.validateAuthorizationCode(code, codeVerifier);
-  } catch {
+  } catch (e) {
+    console.error("[OAuth] Token exchange failed:", e);
     return errorResponse("BAD_REQUEST", "Failed to exchange authorization code", 400);
   }
 
   // Get user info from Google
-  const idToken = tokens.idToken();
-  const payload = idToken.split(".")[1]
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-  const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
-  const binary = Uint8Array.from(atob(padded), (c: string) => c.charCodeAt(0));
-  const claims = JSON.parse(new TextDecoder().decode(binary)) as {
-    sub: string;
-    email: string;
-    name?: string;
-    picture?: string;
-  };
+  let claims: { sub: string; email: string; name?: string; picture?: string };
+  try {
+    const idToken = tokens.idToken();
+    const payload = idToken.split(".")[1]
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
+    const binary = Uint8Array.from(atob(padded), (c: string) => c.charCodeAt(0));
+    claims = JSON.parse(new TextDecoder().decode(binary));
+    console.log("[OAuth] Claims decoded", { sub: claims.sub, email: claims.email, name: claims.name });
+  } catch (e) {
+    console.error("[OAuth] Failed to decode idToken:", e);
+    return redirectWithError(env, "Google 登入失敗：無法解析使用者資訊");
+  }
 
   const providerId = claims.sub;
   const providerEmail = claims.email;
@@ -371,11 +379,13 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
 
   if (existingOAuth) {
     // Login with existing linked account
+    console.log("[OAuth] Existing account found", { userId: existingOAuth.user_id });
     const user = await env.DB.prepare("SELECT id, email, role, is_active FROM users WHERE id = ?")
       .bind(existingOAuth.user_id)
       .first<{ id: string; email: string; role: string; is_active: number }>();
 
     if (!user || !user.is_active) {
+      console.warn("[OAuth] Account disabled or not found", { userId: existingOAuth.user_id });
       return redirectWithError(env, "帳號已被停用");
     }
 
@@ -389,6 +399,7 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
         request.headers.get("User-Agent"), now)
       .run();
 
+    console.log("[OAuth] Login success (existing)", { userId: user.id, email: user.email });
     const accessToken = await generateAccessToken(user.id, user.email, user.role, env.JWT_SECRET);
     const refreshToken = await generateRefreshToken(user.id, user.email, user.role, env.JWT_SECRET);
     return redirectWithTokens(env, accessToken, refreshToken);
@@ -396,6 +407,7 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
 
   // Account linking: user is already logged in
   if (linkUserId) {
+    console.log("[OAuth] Linking Google account", { linkUserId, providerId, providerEmail });
     await env.DB.prepare(
       `INSERT INTO oauth_accounts (id, user_id, provider, provider_id, provider_email, created_at)
        VALUES (?, ?, 'google', ?, ?, ?)`,
@@ -408,6 +420,7 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
 
   // New user: create account
   const userId = crypto.randomUUID();
+  console.log("[OAuth] Creating new user", { userId, email: providerEmail, name: googleName });
   await env.DB.prepare(
     `INSERT INTO users (id, email, name, role, is_active, created_at, updated_at)
      VALUES (?, ?, ?, 'user', 1, ?, ?)`,
@@ -432,6 +445,7 @@ async function handleOAuthGoogleCallback(request: Request, env: Env): Promise<Re
       request.headers.get("User-Agent"), now)
     .run();
 
+  console.log("[OAuth] Registration success", { userId, email: providerEmail });
   const accessToken = await generateAccessToken(userId, providerEmail, "user", env.JWT_SECRET);
   const refreshToken = await generateRefreshToken(userId, providerEmail, "user", env.JWT_SECRET);
   return redirectWithTokens(env, accessToken, refreshToken);

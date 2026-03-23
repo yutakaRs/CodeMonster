@@ -70,7 +70,8 @@ export default {
     try {
       return await router(request, env);
     } catch (e) {
-      console.error("Unhandled error:", e);
+      const url = new URL(request.url);
+      console.error("Unhandled error:", { path: url.pathname, method: request.method, error: e });
       return errorResponse("INTERNAL_ERROR", "Internal server error", 500);
     }
   },
