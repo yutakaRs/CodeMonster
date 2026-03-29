@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
-
-interface LoginRecord {
-  id: string;
-  method: string;
-  ip_address: string | null;
-  user_agent: string | null;
-  created_at: string;
-}
+import type { LoginRecord } from "../../../../shared/types.ts";
 
 export default function LoginHistoryPage() {
   const [history, setHistory] = useState<LoginRecord[]>([]);
