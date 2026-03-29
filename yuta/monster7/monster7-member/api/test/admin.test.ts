@@ -206,6 +206,39 @@ describe("Admin API", () => {
         expect(a.method).toBe("email");
       }
     });
+
+    it("filters by time range (from)", async () => {
+      const futureDate = "2099-01-01T00:00:00";
+      const res = await SELF.fetch(`http://localhost/api/admin/dashboard/activity?from=${futureDate}`, {
+        headers: authHeader(adminToken),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json() as { activity: unknown[]; pagination: { total: number } };
+      expect(data.activity.length).toBe(0);
+      expect(data.pagination.total).toBe(0);
+    });
+
+    it("filters by time range (to)", async () => {
+      const pastDate = "2000-01-01T00:00:00";
+      const res = await SELF.fetch(`http://localhost/api/admin/dashboard/activity?to=${pastDate}`, {
+        headers: authHeader(adminToken),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json() as { activity: unknown[]; pagination: { total: number } };
+      expect(data.activity.length).toBe(0);
+      expect(data.pagination.total).toBe(0);
+    });
+
+    it("filters by time range (from + to) includes records", async () => {
+      const from = "2000-01-01T00:00:00";
+      const to = "2099-12-31T23:59:59";
+      const res = await SELF.fetch(`http://localhost/api/admin/dashboard/activity?from=${from}&to=${to}`, {
+        headers: authHeader(adminToken),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json() as { activity: unknown[]; pagination: { total: number } };
+      expect(data.activity.length).toBeGreaterThanOrEqual(1);
+    });
   });
 });
 

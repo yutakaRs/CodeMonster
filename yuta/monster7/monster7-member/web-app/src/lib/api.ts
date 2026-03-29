@@ -64,6 +64,10 @@ export async function apiFetch(
     if (newToken) {
       headers.set("Authorization", `Bearer ${newToken}`);
       res = await fetch(`${API_URL}${path}`, { ...options, headers });
+    } else {
+      // Refresh failed — clear tokens and redirect to login
+      clearTokens();
+      window.location.href = "/login";
     }
   }
 

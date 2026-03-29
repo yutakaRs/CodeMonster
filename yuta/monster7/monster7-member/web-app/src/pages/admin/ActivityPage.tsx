@@ -46,12 +46,16 @@ export default function ActivityPage() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [page, setPage] = useState(1);
   const [method, setMethod] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(true);
 
   const fetchActivity = (p: number) => {
     setLoading(true);
     let url = `/api/admin/dashboard/activity?page=${p}&limit=20`;
     if (method) url += `&method=${method}`;
+    if (fromDate) url += `&from=${fromDate}T00:00:00`;
+    if (toDate) url += `&to=${toDate}T23:59:59`;
     apiFetch(url)
       .then((res) => res.json())
       .then((data) => {
@@ -63,30 +67,58 @@ export default function ActivityPage() {
 
   useEffect(() => {
     fetchActivity(page);
-  }, [page, method]);
+  }, [page, method, fromDate, toDate]);
 
   return (
     <div className="animate-in">
       <h1 className="text-xl font-semibold text-[#fafafa] mb-6">Activity</h1>
 
-      {/* Filter pills */}
-      <div className="flex items-center gap-1 mb-5">
-        {filters.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => {
-              setMethod(f.value);
-              setPage(1);
-            }}
-            className={`h-8 px-3 rounded-md text-[13px] transition-colors ${
-              method === f.value
-                ? "bg-[#27272a] text-[#fafafa] font-medium"
-                : "text-[#52525b] hover:text-[#a1a1aa]"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-4 mb-5">
+        {/* Method pills */}
+        <div className="flex items-center gap-1">
+          {filters.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => {
+                setMethod(f.value);
+                setPage(1);
+              }}
+              className={`h-8 px-3 rounded-md text-[13px] transition-colors ${
+                method === f.value
+                  ? "bg-[#27272a] text-[#fafafa] font-medium"
+                  : "text-[#52525b] hover:text-[#a1a1aa]"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Time range */}
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => { setFromDate(e.target.value); setPage(1); }}
+            className="h-8 px-2 bg-transparent border border-[#27272a] rounded-md text-[13px] text-[#a1a1aa] outline-none focus:border-[#52525b] transition-colors"
+          />
+          <span className="text-[#52525b] text-[13px]">to</span>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => { setToDate(e.target.value); setPage(1); }}
+            className="h-8 px-2 bg-transparent border border-[#27272a] rounded-md text-[13px] text-[#a1a1aa] outline-none focus:border-[#52525b] transition-colors"
+          />
+          {(fromDate || toDate) && (
+            <button
+              onClick={() => { setFromDate(""); setToDate(""); setPage(1); }}
+              className="h-8 px-2 text-[12px] text-[#52525b] hover:text-[#a1a1aa] transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}

@@ -51,6 +51,9 @@ export default function LoginHistoryPage() {
                   IP
                 </th>
                 <th className="px-5 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
+                  User Agent
+                </th>
+                <th className="px-5 py-3 text-left text-[12px] uppercase tracking-wider text-[#52525b] font-medium">
                   時間
                 </th>
               </tr>
@@ -74,6 +77,9 @@ export default function LoginHistoryPage() {
                   </td>
                   <td className="px-5 py-3 text-[#a1a1aa] font-mono text-[13px]">
                     {record.ip_address ?? "\u2014"}
+                  </td>
+                  <td className="px-5 py-3 text-[#71717a] text-[12px] max-w-[200px] truncate" title={record.user_agent ?? ""}>
+                    {record.user_agent ?? "\u2014"}
                   </td>
                   <td className="px-5 py-3 text-[#71717a]">
                     {new Date(record.created_at).toLocaleString()}
