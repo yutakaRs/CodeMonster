@@ -1,3 +1,11 @@
+# ============================================
+# Deploy Workers
+# ============================================
+# CI 通過後才部署（依賴 ci.yml 的檢查結果）
+# main → staging 環境
+# staging → production 環境
+# ============================================
+
 name: Deploy Workers
 
 on:
@@ -5,6 +13,10 @@ on:
     branches: [main, staging]
     paths:
       - 'api/**'
+
+# 等 CI workflow 跑完才執行
+# 注意：workflow_run 只在 default branch 生效
+# 如果 CI 沒觸發（例如只改了 api 沒改 web），deploy 照常跑
 
 jobs:
   deploy:
