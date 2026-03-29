@@ -29,6 +29,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Create test env vars
+        run: echo 'JWT_SECRET=ci-test-secret' > .dev.vars
+
       - name: Type Check
         run: npx tsc --noEmit
 
