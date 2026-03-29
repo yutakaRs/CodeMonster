@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../lib/auth";
+import MarqueeBackground from "../../components/MarqueeBackground";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8789";
 
@@ -28,9 +29,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0a0a0a] border-r border-[#1c1c1e] flex-col justify-between p-12">
-        <div>
+      {/* Left - Branding with Marquee */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0a0a0a] border-r border-[#1c1c1e] flex-col justify-between p-12 relative overflow-hidden">
+        <MarqueeBackground />
+        <div className="relative z-10">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-[#fafafa] flex items-center justify-center">
               <span className="text-[#09090b] font-semibold text-sm">M7</span>
@@ -38,15 +40,15 @@ export default function LoginPage() {
             <span className="text-[#fafafa] font-semibold">Monster7</span>
           </div>
         </div>
-        <div>
-          <p className="text-[32px] leading-tight font-semibold text-[#fafafa] max-w-md">
+        <div className="relative z-10">
+          <p className="text-[32px] leading-tight font-semibold text-[#fafafa] max-w-md drop-shadow-lg">
             Build and manage your members, all in one place.
           </p>
-          <p className="text-[#71717a] mt-4 max-w-sm leading-relaxed">
+          <p className="text-[#a1a1aa] mt-4 max-w-sm leading-relaxed drop-shadow-md">
             A full-stack member management system built on Cloudflare's edge network — Pages, Workers, D1, R2, and KV.
           </p>
         </div>
-        <p className="text-[12px] text-[#3f3f46]">Cloudflare Full-Stack Application</p>
+        <p className="relative z-10 text-[12px] text-[#52525b]">Cloudflare Full-Stack Application</p>
       </div>
 
       {/* Right - Form */}
