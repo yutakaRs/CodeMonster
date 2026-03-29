@@ -27,3 +27,57 @@ body {
   animation: shimmer 1.5s infinite;
   border-radius: 6px;
 }
+
+/* Marquee Background */
+.marquee-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+  transform: rotate(-12deg) scale(1.5);
+  transform-origin: center center;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.marquee-fade-in { opacity: 1; }
+.marquee-fade-out { opacity: 0; }
+
+.marquee-row {
+  width: 100%;
+  position: relative;
+}
+
+.marquee-card {
+  flex-shrink: 0;
+  width: 180px;
+  height: 120px;
+  border-radius: 12px;
+  margin-right: 16px;
+  opacity: 0.7;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes marqueeLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-track-left,
+.marquee-track-right {
+  display: flex;
+  width: max-content;
+}
+
+.marquee-track-left {
+  animation: marqueeLeft linear infinite;
+}
+
+.marquee-track-right {
+  animation: marqueeRight linear infinite;
+}
