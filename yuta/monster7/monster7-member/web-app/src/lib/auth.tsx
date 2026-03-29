@@ -1,15 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { apiFetch, getAccessToken, setTokens, clearTokens } from "./api";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  bio: string;
-  avatar_url: string | null;
-  role: string;
-  created_at: string;
-}
+import type { User } from "../../../shared/types.ts";
 
 interface AuthContextType {
   user: User | null;

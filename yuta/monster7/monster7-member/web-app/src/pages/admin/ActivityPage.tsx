@@ -1,23 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
-
-interface Activity {
-  id: string;
-  user_id: string;
-  email: string;
-  name: string;
-  method: string;
-  ip_address: string | null;
-  user_agent: string | null;
-  created_at: string;
-}
-
-interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  total_pages: number;
-}
+import type { ActivityRecord as Activity, Pagination } from "../../../../shared/types.ts";
 
 const filters = [
   { value: "", label: "All" },

@@ -123,12 +123,17 @@ cd web-app && npm run dev
 
 ```
 main branch → Cloudflare Pages 自動 build → Staging 環境
+            → GitHub Actions 自動 deploy → Staging Worker
 staging branch → Cloudflare Pages 自動 build → Production 環境
-
-Workers 需手動 deploy：
-  wrangler deploy --env staging      → Staging Worker
-  wrangler deploy --env production   → Production Worker
+              → GitHub Actions 自動 deploy → Production Worker
 ```
+
+### GitHub Actions 自動部署 Workers
+
+推送到 `main` 或 `staging` 時，若 `api/` 有變更，GitHub Actions 會自動部署對應環境的 Worker。
+
+需在 GitHub repo Settings → Secrets 設定：
+- `CLOUDFLARE_API_TOKEN`：Cloudflare API Token（需有 Workers 編輯權限）
 
 ### 部署 Worker
 
@@ -289,3 +294,22 @@ UNIQUE(provider, provider_id)
 | ip_address | TEXT | 登入 IP |
 | user_agent | TEXT | 瀏覽器 UA |
 | created_at | TEXT | ISO 8601 |
+
+## 共用型別 (Shared Types)
+
+前後端共用的 TypeScript 型別定義位於 `shared/types.ts`，避免重複定義：
+
+- `User`, `UserDetail`, `UserListItem` — 使用者資料
+- `LoginRecord`, `OAuthAccount` — 登入歷史、OAuth 帳號
+- `Pagination` — 分頁
+- `DashboardStats`, `ActivityRecord` — Admin Dashboard
+- `ApiError`, `AuthTokens` — API 回應格式
+
+## 自訂 Domain (Optional)
+
+若要為 Production 設定自訂 domain：
+
+1. Cloudflare Dashboard → Pages → `monster7-member` → Custom domains → Add
+2. 輸入自訂 domain（如 `member.yourdomain.com`）
+3. 更新 `api/wrangler.toml` 中 production 的 `CORS_ORIGIN` 為新 domain
+4. 重新部署 Worker：`cd api && wrangler deploy --env production`

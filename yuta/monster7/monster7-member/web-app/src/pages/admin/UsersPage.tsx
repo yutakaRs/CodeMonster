@@ -1,22 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  is_active: number;
-  created_at: string;
-}
-
-interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  total_pages: number;
-}
+import type { UserListItem as User, Pagination } from "../../../../shared/types.ts";
 
 function SkeletonRow() {
   return (

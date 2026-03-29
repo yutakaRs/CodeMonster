@@ -1,31 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
-
-interface UserDetail {
-  id: string;
-  email: string;
-  name: string;
-  bio: string;
-  avatar_url: string | null;
-  role: string;
-  is_active: number;
-  created_at: string;
-  updated_at: string;
-  oauth_accounts: {
-    id: string;
-    provider: string;
-    provider_email: string | null;
-    created_at: string;
-  }[];
-  login_history: {
-    id: string;
-    method: string;
-    ip_address: string | null;
-    user_agent: string | null;
-    created_at: string;
-  }[];
-}
+import type { UserDetail } from "../../../../shared/types.ts";
 
 export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();

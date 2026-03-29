@@ -1,14 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../../lib/api";
-
-interface Stats {
-  total_users: number;
-  today_registrations: number;
-  active_users_7d: number;
-  deactivated_count: number;
-  oauth_link_ratio: string;
-  logins_24h: number;
-}
+import type { DashboardStats as Stats } from "../../../../shared/types.ts";
 
 const cardConfig: { key: keyof Stats; label: string }[] = [
   { key: "total_users", label: "Total Users" },
