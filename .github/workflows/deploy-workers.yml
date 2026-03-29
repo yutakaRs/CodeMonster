@@ -4,14 +4,14 @@ on:
   push:
     branches: [main, staging]
     paths:
-      - 'monster7/monster7-member/api/**'
+      - 'yuta/monster7/monster7-member/api/**'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: monster7/monster7-member/api
+        working-directory: yuta/monster7/monster7-member/api
 
     steps:
       - uses: actions/checkout@v4
