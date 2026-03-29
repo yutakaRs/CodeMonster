@@ -1,15 +1,15 @@
 # ============================================
 # CI Pipeline
 # ============================================
-# PR / push to main 時自動跑檢查
-# 全部通過才允許部署
+# PR / push 時自動跑檢查
+# 通過後觸發 deploy-workers.yml 進行部署
 # ============================================
 
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
     branches: [main]
 
