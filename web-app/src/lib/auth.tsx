@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { apiFetch, getAccessToken, setTokens, clearTokens } from "./api";
 import type { User } from "../../../shared/types.ts";
 
@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     if (!getAccessToken()) {
       setLoading(false);
       return;
@@ -34,10 +34,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    fetchUser();
+    const load = async () => {
+      if (!getAccessToken()) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await apiFetch("/api/users/me");
+        if (res.ok) {
+          setUser(await res.json());
+        } else {
+          clearTokens();
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+    load();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -84,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");

@@ -33,23 +33,22 @@ export default function ActivityPage() {
   const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchActivity = (p: number) => {
-    setLoading(true);
-    let url = `/api/admin/dashboard/activity?page=${p}&limit=20`;
-    if (method) url += `&method=${method}`;
-    if (fromDate) url += `&from=${fromDate}T00:00:00`;
-    if (toDate) url += `&to=${toDate}T23:59:59`;
-    apiFetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setActivity(data.activity || []);
-        setPagination(data.pagination);
-      })
-      .finally(() => setLoading(false));
-  };
-
   useEffect(() => {
-    fetchActivity(page);
+    const load = () => {
+      setLoading(true);
+      let url = `/api/admin/dashboard/activity?page=${page}&limit=20`;
+      if (method) url += `&method=${method}`;
+      if (fromDate) url += `&from=${fromDate}T00:00:00`;
+      if (toDate) url += `&to=${toDate}T23:59:59`;
+      apiFetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          setActivity(data.activity || []);
+          setPagination(data.pagination);
+        })
+        .finally(() => setLoading(false));
+    };
+    load();
   }, [page, method, fromDate, toDate]);
 
   return (

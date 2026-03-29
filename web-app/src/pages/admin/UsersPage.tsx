@@ -28,19 +28,18 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = (p: number) => {
-    setLoading(true);
-    apiFetch(`/api/admin/users?page=${p}&limit=20`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.users || []);
-        setPagination(data.pagination);
-      })
-      .finally(() => setLoading(false));
-  };
-
   useEffect(() => {
-    fetchUsers(page);
+    const load = () => {
+      setLoading(true);
+      apiFetch(`/api/admin/users?page=${page}&limit=20`)
+        .then((res) => res.json())
+        .then((data) => {
+          setUsers(data.users || []);
+          setPagination(data.pagination);
+        })
+        .finally(() => setLoading(false));
+    };
+    load();
   }, [page]);
 
   return (

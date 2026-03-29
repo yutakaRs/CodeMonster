@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { apiFetch } from "../../lib/api";
 import type { UserDetail } from "../../../../shared/types.ts";
@@ -10,15 +10,18 @@ export default function UserDetailPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const fetchUser = () => {
+  const fetchUser = useCallback(() => {
     apiFetch(`/api/admin/users/${id}`)
       .then((res) => res.json())
       .then(setUser)
       .finally(() => setLoading(false));
-  };
+  }, [id]);
 
   useEffect(() => {
-    fetchUser();
+    apiFetch(`/api/admin/users/${id}`)
+      .then((res) => res.json())
+      .then(setUser)
+      .finally(() => setLoading(false));
   }, [id]);
 
   const changeRole = async (role: string) => {
