@@ -1,0 +1,60 @@
+# ============================================
+# CI Pipeline
+# ============================================
+# PR / push 時自動跑檢查
+# 通過後觸發 deploy-workers.yml 進行部署
+# ============================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -------- API：型別檢查 + 測試 --------
+  api-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - name: Create test env vars
+        run: echo 'JWT_SECRET=ci-test-secret' > .dev.vars
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm test
+
+  # -------- Web App：Lint + Build --------
+  web-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
