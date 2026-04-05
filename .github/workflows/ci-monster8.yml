@@ -5,10 +5,12 @@ on:
     branches: [main, staging]
     paths:
       - 'monster8-sports-bingo/**'
+      - '.github/workflows/ci-monster8.yml'
   pull_request:
     branches: [main]
     paths:
       - 'monster8-sports-bingo/**'
+      - '.github/workflows/ci-monster8.yml'
 
 jobs:
   api-check:
