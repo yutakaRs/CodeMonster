@@ -64,7 +64,7 @@ routes = [
 ]
 
 [env.production.vars]
-CORS_ORIGIN = "https://monster8.yutachang.com"
+CORS_ORIGIN = "https://yubet.yutachang.com"
 AUTH_API_URL = "https://monster7-api-production.changchiahao0225.workers.dev"
 ENVIRONMENT = "production"
 
