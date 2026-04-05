@@ -1,0 +1,147 @@
+import { useState, useEffect } from "react";
+import { apiFetch } from "../../lib/api";
+import BingoBoard from "../../components/BingoBoard";
+
+type PlayMode = "star" | "big_small" | "odd_even" | "super";
+
+export default function BetPage() {
+  const [playMode, setPlayMode] = useState<PlayMode>("star");
+  const [starCount, setStarCount] = useState(5);
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
+  const [selectedSides, setSelectedSides] = useState<string[]>([]);
+  const [multiplier, setMultiplier] = useState(1);
+  const [periods, setPeriods] = useState(1);
+  const [balance, setBalance] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    apiFetch<{ data: { balance: number } }>("/api/bingo/wallet").then((r) => setBalance(r.data.balance)).catch(() => {});
+  }, []);
+
+  useEffect(() => { setSelectedNumbers([]); setSelectedSides([]); }, [playMode, starCount]);
+
+  const toggleNumber = (num: number) => setSelectedNumbers((prev) => prev.includes(num) ? prev.filter((n) => n !== num) : [...prev, num]);
+  const toggleSide = (side: string) => setSelectedSides((prev) => prev.includes(side) ? prev.filter((s) => s !== side) : [...prev, side]);
+
+  const quickSelect = () => {
+    const max = playMode === "star" ? starCount : playMode === "super" ? 1 : 0;
+    if (max === 0) return;
+    const remaining = max - selectedNumbers.length;
+    if (remaining <= 0) return;
+    const available = Array.from({ length: 80 }, (_, i) => i + 1).filter((n) => !selectedNumbers.includes(n));
+    const shuffled = available.sort(() => Math.random() - 0.5);
+    setSelectedNumbers((prev) => [...prev, ...shuffled.slice(0, remaining)]);
+  };
+
+  let units = 0;
+  if (playMode === "star") units = 1;
+  else if (playMode === "big_small" || playMode === "odd_even") units = selectedSides.length;
+  else if (playMode === "super") units = selectedNumbers.length;
+  const totalCost = 25 * units * multiplier * periods;
+
+  const handleSubmit = async () => {
+    setSubmitting(true); setMessage("");
+    try {
+      const body: Record<string, unknown> = { play_type: playMode === "star" ? `star_${starCount}` : playMode, multiplier, periods };
+      if (playMode === "star" || playMode === "super") body.selected_numbers = selectedNumbers;
+      if (playMode === "big_small" || playMode === "odd_even") {
+        if (selectedSides.length === 1) body.selected_side = selectedSides[0]; else body.selected_sides = selectedSides;
+      }
+      const result = await apiFetch<{ data: { total_cost_display: string; balance_display: string } }>("/api/bingo/bets", { method: "POST", body: JSON.stringify(body) });
+      setMessage(`Bet placed! Cost: ${result.data.total_cost_display}, Balance: ${result.data.balance_display}`);
+      setSelectedNumbers([]); setSelectedSides([]);
+    } catch (e: unknown) {
+      const err = e as { error?: { message?: string } };
+      setMessage(err?.error?.message || "Bet failed");
+    } finally { setSubmitting(false); }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 text-amber-400">Place Bet</h1>
+
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {(["star", "big_small", "odd_even", "super"] as PlayMode[]).map((m) => (
+          <button key={m} onClick={() => setPlayMode(m)}
+            className={`px-4 py-2 rounded-lg font-medium ${playMode === m ? "bg-gradient-to-r from-amber-500 to-orange-500 text-black" : "bg-[#2a2220] text-[#a89890] border border-[#4a3f3b]"}`}>
+            {m === "star" ? "Star" : m === "big_small" ? "Big/Small" : m === "odd_even" ? "Odd/Even" : "Super"}
+          </button>
+        ))}
+      </div>
+
+      {playMode === "star" && (
+        <div className="flex gap-1 mb-4 flex-wrap">
+          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+            <button key={n} onClick={() => setStarCount(n)}
+              className={`px-3 py-1 rounded text-sm ${starCount === n ? "bg-amber-600 text-white" : "bg-[#3d3330] text-[#a89890]"}`}>
+              {n}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(playMode === "star" || playMode === "super") && (
+        <>
+          <BingoBoard selectedNumbers={selectedNumbers} onToggle={toggleNumber} maxSelections={playMode === "star" ? starCount : 20} />
+          <button onClick={quickSelect} className="mt-2 px-4 py-2 bg-[#3d3330] rounded-lg text-sm hover:bg-[#4a3f3b] text-[#a89890]">Quick Select</button>
+        </>
+      )}
+
+      {playMode === "big_small" && (
+        <div className="flex gap-4 justify-center my-8">
+          {["big", "small"].map((side) => (
+            <button key={side} onClick={() => toggleSide(side)}
+              className={`w-32 h-32 rounded-2xl text-3xl font-bold border-2 ${selectedSides.includes(side) ? "bg-amber-500 text-black border-amber-400" : "bg-[#2a2220] text-[#a89890] border-[#4a3f3b] hover:border-amber-600"}`}>
+              {side === "big" ? "大" : "小"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {playMode === "odd_even" && (
+        <div className="flex gap-4 justify-center my-8">
+          {["odd", "even"].map((side) => (
+            <button key={side} onClick={() => toggleSide(side)}
+              className={`w-32 h-32 rounded-2xl text-3xl font-bold border-2 ${selectedSides.includes(side) ? "bg-amber-500 text-black border-amber-400" : "bg-[#2a2220] text-[#a89890] border-[#4a3f3b] hover:border-amber-600"}`}>
+              {side === "odd" ? "單" : "雙"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-4 mt-6 items-center flex-wrap">
+        <label className="text-sm text-[#a89890]">
+          Multiplier:
+          <select value={multiplier} onChange={(e) => setMultiplier(Number(e.target.value))} className="ml-2 bg-[#3d3330] text-[#faf5f0] rounded px-2 py-1 border border-[#4a3f3b]">
+            {Array.from({ length: 50 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}x</option>)}
+          </select>
+        </label>
+        <label className="text-sm text-[#a89890]">
+          Periods:
+          <select value={periods} onChange={(e) => setPeriods(Number(e.target.value))} className="ml-2 bg-[#3d3330] text-[#faf5f0] rounded px-2 py-1 border border-[#4a3f3b]">
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div className="bg-[#2a2220] border border-[#4a3f3b] rounded-xl p-4 mt-4">
+        <div className="flex justify-between text-sm">
+          <span className="text-[#a89890]">Cost: 25 x {units} x {multiplier}x x {periods}</span>
+          <span className="text-amber-400 font-bold">{totalCost} TWD</span>
+        </div>
+        <div className="flex justify-between text-sm mt-1">
+          <span className="text-[#a89890]">Balance</span>
+          <span className="text-[#faf5f0]">{(balance / 100).toFixed(0)} TWD</span>
+        </div>
+      </div>
+
+      {message && <p className={`mt-2 text-sm ${message.includes("failed") || message.includes("Insufficient") ? "text-red-400" : "text-emerald-400"}`}>{message}</p>}
+
+      <button onClick={handleSubmit} disabled={submitting || units === 0}
+        className="w-full mt-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-xl hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-lg">
+        {submitting ? "Submitting..." : `Bet ${totalCost} TWD`}
+      </button>
+    </div>
+  );
+}

@@ -1,0 +1,84 @@
+name = "monster8-api"
+main = "src/index.ts"
+compatibility_date = "2025-03-20"
+
+# Cron Trigger: Taiwan 07:05-23:55 (UTC+8) = UTC 23:05-15:55
+# Split into two ranges because it crosses midnight in UTC
+[triggers]
+crons = ["5-55/5 23 * * *", "5-55/5 0-15 * * *"]
+
+# ─── Local Dev (top-level bindings for `wrangler dev`) ──
+[vars]
+CORS_ORIGIN = "http://localhost:5173"
+ENVIRONMENT = "development"
+AUTH_API_URL = "http://localhost:8788"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "monster8-db-staging"
+database_id = "f790ff7f-d3ef-41b9-924c-0b7e70827e45"
+migrations_dir = "migrations"
+
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "monster7-db-staging"
+database_id = "18ed7bb5-0683-49d2-805d-55a27246a4b7"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "b3a3f05f8a9c4b31a6407d8149cc389b"
+
+# ─── Staging ──────────────────────────────────────────
+[env.staging]
+name = "monster8-api-staging"
+workers_dev = true
+routes = [
+  { pattern = "api-staging.monster8.yutachang.com", custom_domain = true }
+]
+
+[env.staging.vars]
+CORS_ORIGIN = "https://main.monster8.pages.dev"
+ENVIRONMENT = "staging"
+AUTH_API_URL = "https://monster7-api-staging.changchiahao0225.workers.dev"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "monster8-db-staging"
+database_id = "f790ff7f-d3ef-41b9-924c-0b7e70827e45"
+migrations_dir = "migrations"
+
+[[env.staging.d1_databases]]
+binding = "AUTH_DB"
+database_name = "monster7-db-staging"
+database_id = "18ed7bb5-0683-49d2-805d-55a27246a4b7"
+
+[[env.staging.kv_namespaces]]
+binding = "KV"
+id = "b3a3f05f8a9c4b31a6407d8149cc389b"
+
+# ─── Production ───────────────────────────────────────
+[env.production]
+name = "monster8-api-production"
+routes = [
+  { pattern = "api.monster8.yutachang.com", custom_domain = true }
+]
+
+[env.production.vars]
+CORS_ORIGIN = "https://monster8.yutachang.com"
+AUTH_API_URL = "https://monster7-api-production.changchiahao0225.workers.dev"
+ENVIRONMENT = "production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "monster8-db-production"
+database_id = "a2c054fb-56af-4942-a838-a2d3e18f394d"
+migrations_dir = "migrations"
+
+[[env.production.d1_databases]]
+binding = "AUTH_DB"
+database_name = "monster7-db-production"
+database_id = "b0b6bec5-bddc-4ca1-9201-5f6fb40e34e6"
+
+[[env.production.kv_namespaces]]
+binding = "KV"
+id = "45d9c6407daa4e0a93df58ebaafa58f0"

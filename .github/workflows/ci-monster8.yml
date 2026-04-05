@@ -1,0 +1,48 @@
+name: Monster8 CI
+
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - 'monster8-sports-bingo/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'monster8-sports-bingo/**'
+
+jobs:
+  api-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: monster8-sports-bingo/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Create .dev.vars for tests
+        run: |
+          echo "JWT_SECRET=test-secret-for-ci" > .dev.vars
+          echo "SPORTSGAMEODDS_API_KEY=test-key" >> .dev.vars
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: Run tests
+        run: npx vitest run
+
+  web-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: monster8-sports-bingo/web-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Lint
+        run: npx eslint .
+      - name: Build
+        run: npx vite build
