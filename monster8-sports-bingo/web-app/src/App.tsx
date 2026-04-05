@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./lib/auth";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { AuthProvider } from "./lib/auth";
 import SportsPage from "./pages/sports/SportsPage";
 import EventDetailPage from "./pages/sports/EventDetailPage";
 import DrawHallPage from "./pages/bingo/DrawHallPage";
@@ -12,23 +12,9 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
 import ProfilePage from "./pages/auth/ProfilePage";
 import Navbar from "./components/Navbar";
-import type { ReactNode } from "react";
+import { ProtectedRoute, GuestRoute } from "./components/RouteGuards";
 
 const env = import.meta.env.VITE_ENV;
-
-function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="text-center py-16 text-[#a89890]">Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-  return <>{children}</>;
-}
-
-function GuestRoute({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="text-center py-16 text-[#a89890]">Loading...</div>;
-  if (user) return <Navigate to="/bingo" replace />;
-  return <>{children}</>;
-}
 
 function HomePage() {
   return (

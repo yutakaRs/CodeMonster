@@ -23,6 +23,7 @@ export default function DrawHallPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchCurrent(); }, [fetchCurrent]);
 
   if (loading && !data) return <div className="text-center py-16 text-[#a89890]">Loading...</div>;

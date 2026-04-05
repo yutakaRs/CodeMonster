@@ -20,7 +20,7 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     if (!eventId) return;
-    setLoading(true);
+    setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
     apiFetch<{ data: EventData[] }>(`/api/sports/events/${eventId}`)
       .then((r) => setEvent(Array.isArray(r.data) ? r.data[0] : r.data))
       .catch(() => setError("Failed to load event"))

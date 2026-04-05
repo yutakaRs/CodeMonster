@@ -18,7 +18,7 @@ export default function DrawHistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
     Promise.all([
       apiFetch<{ data: Draw[] }>("/api/bingo/draws/latest?limit=20"),
       apiFetch<{ data: FreqData }>(`/api/bingo/stats/frequency?periods=${periods}`),

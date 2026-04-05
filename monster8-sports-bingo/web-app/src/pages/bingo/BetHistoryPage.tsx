@@ -27,6 +27,7 @@ export default function BetHistoryPage() {
       .finally(() => setLoading(false));
   }, [filter, page]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchBets(); }, [fetchBets]);
 
   return (
