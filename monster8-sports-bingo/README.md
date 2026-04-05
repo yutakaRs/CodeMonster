@@ -112,3 +112,4 @@ npm test       # 66 tests (draw-engine, odds-engine, settlement, kv-cache)
 - Cloudflare Tunnel 用於本地開發的 OAuth callback
 - API key 透過 wrangler secret 管理，不暴露在前端
 
+
