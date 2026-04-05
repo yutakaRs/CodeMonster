@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../../lib/api";
 import BingoBoard from "../../components/BingoBoard";
+import { getStarProbabilities, getBigSmallProbability, getSuperProbability } from "../../lib/hypergeometric";
+
+const STAR_PAYOUTS: Record<number, Record<number, number>> = {
+  1: { 1: 2 }, 2: { 2: 3, 1: 1 }, 3: { 3: 20, 2: 2 },
+  4: { 4: 40, 3: 4, 2: 1 }, 5: { 5: 300, 4: 20, 3: 2 },
+  6: { 6: 1000, 5: 40, 4: 8, 3: 1 }, 7: { 7: 3200, 6: 120, 5: 12, 4: 2, 3: 1 },
+  8: { 8: 20000, 7: 800, 6: 40, 5: 8, 4: 1, 0: 1 },
+  9: { 9: 40000, 8: 4000, 7: 120, 6: 20, 5: 4, 4: 1, 0: 1 },
+  10: { 10: 200000, 9: 10000, 8: 1000, 7: 100, 6: 10, 5: 1, 0: 1 },
+};
 
 type PlayMode = "star" | "big_small" | "odd_even" | "super";
 
@@ -109,6 +119,44 @@ export default function BetPage() {
           ))}
         </div>
       )}
+
+      {/* Probability Display (Hypergeometric Distribution) */}
+      <div className="bg-[#2a2220] border border-[#4a3f3b] rounded-xl p-4 mt-4">
+        <h3 className="text-sm font-bold text-[#a89890] mb-2 uppercase tracking-wider">Win Probability</h3>
+        {playMode === "star" && (
+          <div className="space-y-1">
+            {getStarProbabilities(starCount)
+              .filter((p) => STAR_PAYOUTS[starCount]?.[p.matched] !== undefined)
+              .map((p) => (
+                <div key={p.matched} className="flex justify-between text-sm">
+                  <span className="text-[#a89890]">
+                    Match {p.matched} → {STAR_PAYOUTS[starCount][p.matched]}x
+                  </span>
+                  <span className="text-amber-400 font-mono">{p.percentage}</span>
+                </div>
+              ))}
+          </div>
+        )}
+        {playMode === "big_small" && (
+          <div className="flex justify-between text-sm">
+            <span className="text-[#a89890]">{"Win (one side ≥ 13) → 6x"}</span>
+            <span className="text-amber-400 font-mono">{getBigSmallProbability().percentage}</span>
+          </div>
+        )}
+        {playMode === "odd_even" && (
+          <div className="flex justify-between text-sm">
+            <span className="text-[#a89890]">{"Win (one side ≥ 13) → 6x"}</span>
+            <span className="text-amber-400 font-mono">{getBigSmallProbability().percentage}</span>
+          </div>
+        )}
+        {playMode === "super" && (
+          <div className="flex justify-between text-sm">
+            <span className="text-[#a89890]">Match super number → 48x</span>
+            <span className="text-amber-400 font-mono">{getSuperProbability().percentage}</span>
+          </div>
+        )}
+        <p className="text-[10px] text-[#5a4f4b] mt-2">Based on Hypergeometric Distribution: C(20,k) x C(60,n-k) / C(80,n)</p>
+      </div>
 
       <div className="flex gap-4 mt-6 items-center flex-wrap">
         <label className="text-sm text-[#a89890]">
