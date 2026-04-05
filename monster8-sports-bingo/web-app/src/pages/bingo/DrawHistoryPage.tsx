@@ -154,13 +154,15 @@ export default function DrawHistoryPage() {
             </div>
           )}
 
-          {/* Recent Draws Table */}
+          {/* Recent Draws */}
           <div className="bg-[#2a2220] border border-[#4a3f3b] rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-[#4a3f3b]">
               <h2 className="text-lg font-bold text-[#faf5f0]">Recent Draws</h2>
             </div>
             <div className="max-h-[420px] overflow-y-auto">
-              <table className="w-full">
+
+              {/* Desktop: Table */}
+              <table className="w-full hidden md:table">
                 <thead className="sticky top-0 bg-[#231e1c] z-10">
                   <tr className="text-xs text-[#a89890] uppercase tracking-wider">
                     <th className="text-left px-5 py-2.5 font-medium">Round</th>
@@ -174,38 +176,21 @@ export default function DrawHistoryPage() {
                     const regularNums = d.numbers.slice(0, 19);
                     const superNum = d.numbers[19] ?? d.super_number;
                     return (
-                      <tr
-                        key={d.round_id}
-                        className="hover:bg-[#2f2926] transition-colors"
-                      >
-                        <td className="px-5 py-3 text-sm font-mono text-[#faf5f0] whitespace-nowrap">
-                          {d.round_id}
-                        </td>
+                      <tr key={d.round_id} className="hover:bg-[#2f2926] transition-colors">
+                        <td className="px-5 py-3 text-sm font-mono text-[#faf5f0] whitespace-nowrap">{d.round_id}</td>
                         <td className="px-5 py-3 text-xs text-[#a89890] whitespace-nowrap">
-                          {d.draw_time
-                            ? new Date(d.draw_time).toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "—"}
+                          {d.draw_time ? new Date(d.draw_time).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—"}
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex flex-wrap gap-[3px]">
                             {regularNums.map((n) => (
-                              <span
-                                key={n}
-                                className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#3a3230] text-[10px] font-semibold text-[#faf5f0]"
-                              >
-                                {n}
-                              </span>
+                              <span key={n} className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#3a3230] text-[10px] font-semibold text-[#faf5f0]">{n}</span>
                             ))}
                           </div>
                         </td>
                         <td className="px-5 py-3 text-right">
                           {superNum != null && (
-                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-yellow-300 text-black text-xs font-bold shadow-[0_0_8px_rgba(245,158,11,0.4)]">
-                              {superNum}
-                            </span>
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-yellow-300 text-black text-xs font-bold shadow-[0_0_8px_rgba(245,158,11,0.4)]">{superNum}</span>
                           )}
                         </td>
                       </tr>
@@ -213,6 +198,34 @@ export default function DrawHistoryPage() {
                   })}
                 </tbody>
               </table>
+
+              {/* Mobile: Card list */}
+              <div className="md:hidden divide-y divide-[#3a3230]">
+                {draws.map((d) => {
+                  const superNum = d.numbers[19] ?? d.super_number;
+                  return (
+                    <div key={d.round_id} className="px-4 py-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-mono text-[#faf5f0]">{d.round_id}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#a89890]">
+                            {d.draw_time ? new Date(d.draw_time).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—"}
+                          </span>
+                          {superNum != null && (
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-yellow-300 text-black text-xs font-bold shadow-[0_0_8px_rgba(245,158,11,0.4)]">{superNum}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {d.numbers.slice(0, 19).map((n) => (
+                          <span key={n} className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#3a3230] text-[10px] font-semibold text-[#faf5f0]">{n}</span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
             </div>
           </div>
         </div>
