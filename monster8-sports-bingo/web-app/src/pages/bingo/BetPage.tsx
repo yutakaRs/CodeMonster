@@ -81,42 +81,74 @@ export default function BetPage() {
       </div>
 
       {playMode === "star" && (
-        <div className="flex gap-1 mb-4 flex-wrap">
-          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-            <button key={n} onClick={() => setStarCount(n)}
-              className={`px-3 py-1 rounded text-sm ${starCount === n ? "bg-amber-600 text-white" : "bg-[#3d3330] text-[#a89890]"}`}>
-              {n}
-            </button>
-          ))}
+        <div className="mb-4">
+          <p className="text-xs text-[#a89890] mb-2">Select star count (pick how many numbers)</p>
+          <div className="flex gap-1 flex-wrap">
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              <button key={n} onClick={() => setStarCount(n)}
+                className={`w-9 h-9 rounded-lg text-sm font-bold ${starCount === n ? "bg-amber-600 text-white" : "bg-[#3d3330] text-[#a89890] hover:bg-[#4a3f3b]"}`}>
+                {n}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {(playMode === "star" || playMode === "super") && (
-        <>
+        <div className="mb-2">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-[#a89890]">
+              {playMode === "star"
+                ? `Pick ${starCount} number${starCount > 1 ? "s" : ""}`
+                : "Pick 1-20 numbers (each = 1 unit)"}
+              <span className="ml-2 text-amber-400 font-bold">
+                {selectedNumbers.length} / {playMode === "star" ? starCount : 20}
+              </span>
+            </p>
+            <div className="flex gap-2">
+              {selectedNumbers.length > 0 && (
+                <button onClick={() => setSelectedNumbers([])}
+                  className="px-3 py-1 bg-red-600/20 text-red-400 rounded-lg text-xs hover:bg-red-600/30 border border-red-600/20">
+                  Clear All
+                </button>
+              )}
+              <button onClick={quickSelect}
+                className="px-3 py-1 bg-[#3d3330] rounded-lg text-xs hover:bg-[#4a3f3b] text-[#a89890] border border-[#4a3f3b]">
+                Quick Select
+              </button>
+            </div>
+          </div>
           <BingoBoard selectedNumbers={selectedNumbers} onToggle={toggleNumber} maxSelections={playMode === "star" ? starCount : 20} />
-          <button onClick={quickSelect} className="mt-2 px-4 py-2 bg-[#3d3330] rounded-lg text-sm hover:bg-[#4a3f3b] text-[#a89890]">Quick Select</button>
-        </>
+        </div>
       )}
 
       {playMode === "big_small" && (
-        <div className="flex gap-4 justify-center my-8">
-          {["big", "small"].map((side) => (
-            <button key={side} onClick={() => toggleSide(side)}
-              className={`w-32 h-32 rounded-2xl text-3xl font-bold border-2 ${selectedSides.includes(side) ? "bg-amber-500 text-black border-amber-400" : "bg-[#2a2220] text-[#a89890] border-[#4a3f3b] hover:border-amber-600"}`}>
-              {side === "big" ? "大" : "小"}
-            </button>
-          ))}
+        <div className="my-6">
+          <p className="text-sm text-[#a89890] mb-1">Predict: will more drawn numbers be big (41-80) or small (1-40)?</p>
+          <p className="text-xs text-[#5a4f4b] mb-4">Win if your side has 13+ out of 20 drawn numbers. Can select both (= 2 units).</p>
+          <div className="flex gap-4 justify-center">
+            {["big", "small"].map((side) => (
+              <button key={side} onClick={() => toggleSide(side)}
+                className={`w-32 h-32 rounded-2xl text-3xl font-bold border-2 ${selectedSides.includes(side) ? "bg-amber-500 text-black border-amber-400" : "bg-[#2a2220] text-[#a89890] border-[#4a3f3b] hover:border-amber-600"}`}>
+                {side === "big" ? "大" : "小"}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {playMode === "odd_even" && (
-        <div className="flex gap-4 justify-center my-8">
-          {["odd", "even"].map((side) => (
-            <button key={side} onClick={() => toggleSide(side)}
-              className={`w-32 h-32 rounded-2xl text-3xl font-bold border-2 ${selectedSides.includes(side) ? "bg-amber-500 text-black border-amber-400" : "bg-[#2a2220] text-[#a89890] border-[#4a3f3b] hover:border-amber-600"}`}>
-              {side === "odd" ? "單" : "雙"}
-            </button>
-          ))}
+        <div className="my-6">
+          <p className="text-sm text-[#a89890] mb-1">Predict: will more drawn numbers be odd or even?</p>
+          <p className="text-xs text-[#5a4f4b] mb-4">Win if your side has 13+ out of 20 drawn numbers. Can select both (= 2 units).</p>
+          <div className="flex gap-4 justify-center">
+            {["odd", "even"].map((side) => (
+              <button key={side} onClick={() => toggleSide(side)}
+                className={`w-32 h-32 rounded-2xl text-3xl font-bold border-2 ${selectedSides.includes(side) ? "bg-amber-500 text-black border-amber-400" : "bg-[#2a2220] text-[#a89890] border-[#4a3f3b] hover:border-amber-600"}`}>
+                {side === "odd" ? "單" : "雙"}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
